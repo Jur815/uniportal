@@ -1,0 +1,13 @@
+node_modules
+.DS_Store
+
+# secrets
+.env
+config.env
+server/config.env
+
+# builds
+client/dist
+server/dist
+build
+dist
