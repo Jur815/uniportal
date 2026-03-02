@@ -10,7 +10,22 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const newUser = await User.create({ name, email, password });
+    if (!name || !email || !password) {
+      return res
+        .status(400)
+        .json({
+          status: "fail",
+          message: "Name, email and password are required",
+        });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const newUser = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password,
+    });
 
     const token = signToken(newUser._id);
 
@@ -27,6 +42,13 @@ exports.register = async (req, res) => {
       },
     });
   } catch (err) {
+    // Duplicate email (Mongo)
+    if (err.code === 11000) {
+      return res
+        .status(409)
+        .json({ status: "fail", message: "Email already registered" });
+    }
+
     res.status(400).json({ status: "fail", message: err.message });
   }
 };
@@ -41,7 +63,12 @@ exports.login = async (req, res) => {
         .json({ status: "fail", message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await User.findOne({ email: normalizedEmail }).select(
+      "+password",
+    );
+
     if (!user || !(await user.correctPassword(password, user.password))) {
       return res
         .status(401)

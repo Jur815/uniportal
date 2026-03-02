@@ -7,10 +7,9 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
-
-app.use("/api/v1/users", userRoutes);
 
 // logging (optional) — usually before routes is fine
 if (process.env.NODE_ENV === "development") {
@@ -18,6 +17,9 @@ if (process.env.NODE_ENV === "development") {
 }
 
 app.get("/", (req, res) => res.send("UniPortal API"));
+app.get("/api/v1/health", (req, res) =>
+  res.json({ status: "ok", message: "UniPortal API is running" }),
+);
 
 // API routes
 app.use("/api/v1/auth", authRoutes);
@@ -25,6 +27,7 @@ app.use("/api/v1/users", userRoutes);
 
 // app.use("/api/v1", routes);
 
+// 404 handler
 app.all(/.*/, (req, res) => { 
   res
     .status(404)
