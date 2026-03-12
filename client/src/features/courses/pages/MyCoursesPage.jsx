@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { getMyCourses } from "../../../api/enrollments.api";
+import CourseCard from "../components/CourseCard";
+import Loader from "../../../components/ui/Loader";
+import EmptyState from "../../../components/ui/EmptyState";
+import PageHeader from "../../../components/ui/PageHeader";
 
 export default function MyCoursesPage() {
   const [courses, setCourses] = useState([]);
@@ -21,32 +25,21 @@ export default function MyCoursesPage() {
     fetchMyCourses();
   }, []);
 
-  if (loading) return <div>Loading my courses...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <Loader text="Loading my courses..." />;
+  if (error) return <EmptyState title={error} />;
 
   return (
     <div>
-      <h2>My Courses</h2>
+      <PageHeader title="My Courses" subtitle="Courses you are enrolled in." />
 
       {courses.length === 0 ? (
-        <p>You have not enrolled in any courses yet.</p>
+        <EmptyState title="You have not enrolled in any courses yet." />
       ) : (
-        courses.map((course) => (
-          <div
-            key={course._id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "16px",
-              marginBottom: "12px",
-              borderRadius: "8px",
-            }}
-          >
-            <h3>{course.title}</h3>
-            <p>Code: {course.code}</p>
-            <p>Credit Hours: {course.creditHours}</p>
-            <p>Semester: {course.semester}</p>
-          </div>
-        ))
+        <div className="grid">
+          {courses.map((course) => (
+            <CourseCard key={course._id} course={course} />
+          ))}
+        </div>
       )}
     </div>
   );

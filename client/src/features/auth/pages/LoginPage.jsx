@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Card from "../../../components/ui/Card";
+import Button from "../../../components/ui/Button";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,12 +26,11 @@ export default function LoginPage() {
 
     try {
       const data = await login(formData.email, formData.password);
-      const role = data.data.user.role;
 
-      if (role === "admin") {
-        navigate("/admin/courses/new");
+      if (data.data.user.role === "admin") {
+        navigate("/");
       } else {
-        navigate("/courses");
+        navigate("/");
       }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
@@ -42,38 +40,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: "400px" }}>
-      <h2>Login</h2>
+    <div className="auth-page">
+      <Card>
+        <h2>Login</h2>
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "12px" }}>
+        <form className="form" onSubmit={handleSubmit}>
           <input
             type="email"
             name="email"
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            style={{ width: "100%", padding: "10px" }}
           />
-        </div>
 
-        <div style={{ marginBottom: "12px" }}>
           <input
             type="password"
             name="password"
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            style={{ width: "100%", padding: "10px" }}
           />
-        </div>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+          {error && <p className="error-text">{error}</p>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

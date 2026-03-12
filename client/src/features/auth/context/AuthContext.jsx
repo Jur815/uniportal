@@ -1,13 +1,35 @@
-import React, { createContext, useContext, useState } from "react";
-import { loginUser } from "../../../api/auth.api";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { getMe, loginUser } from "../../../api/auth.api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  const isAuthenticated = !!localStorage.getItem("token");
-  const authLoading = false;
+  useEffect(() => {
+    const bootstrapAuth = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setAuthLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getMe();
+        setUser(data.data.user);
+      } catch (error) {
+        console.error("Failed to restore session:", error);
+        localStorage.removeItem("token");
+        setUser(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    bootstrapAuth();
+  }, []);
 
   const login = async (email, password) => {
     const data = await loginUser({ email, password });
@@ -23,14 +45,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const isAuthenticated = !!localStorage.getItem("token");
+
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated,
         authLoading,
+        isAuthenticated,
         login,
         logout,
+        setUser,
       }}
     >
       {children}
@@ -39,5 +64,11 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
+  return context;
 }

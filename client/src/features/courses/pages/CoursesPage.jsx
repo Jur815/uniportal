@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import { getAllCourses } from "../../../api/courses.api";
 import { enrollInCourse } from "../../../api/enrollments.api";
 import { useAuth } from "../../auth/context/AuthContext";
+import CourseCard from "../components/CourseCard";
+import Loader from "../../../components/ui/Loader";
+import EmptyState from "../../../components/ui/EmptyState";
+import PageHeader from "../../../components/ui/PageHeader";
 
 export default function CoursesPage() {
   const { user } = useAuth();
-
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
@@ -38,41 +41,27 @@ export default function CoursesPage() {
     }
   };
 
-  if (loading) return <div>Loading courses...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <Loader text="Loading courses..." />;
+  if (error) return <EmptyState title={error} />;
 
   return (
     <div>
-      <h2>Courses</h2>
+      <PageHeader title="Courses" subtitle="Browse all available courses." />
 
       {courses.length === 0 ? (
-        <p>No courses found.</p>
+        <EmptyState title="No courses found." />
       ) : (
-        courses.map((course) => (
-          <div
-            key={course._id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "16px",
-              marginBottom: "12px",
-              borderRadius: "8px",
-            }}
-          >
-            <h3>{course.title}</h3>
-            <p>Code: {course.code}</p>
-            <p>Credit Hours: {course.creditHours}</p>
-            <p>Semester: {course.semester}</p>
-
-            {user?.role === "student" && (
-              <button
-                onClick={() => handleEnroll(course._id)}
-                disabled={actionLoadingId === course._id}
-              >
-                {actionLoadingId === course._id ? "Enrolling..." : "Enroll"}
-              </button>
-            )}
-          </div>
-        ))
+        <div className="grid">
+          {courses.map((course) => (
+            <CourseCard
+              key={course._id}
+              course={course}
+              showEnroll={user?.role === "student"}
+              onEnroll={handleEnroll}
+              loading={actionLoadingId === course._id}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
