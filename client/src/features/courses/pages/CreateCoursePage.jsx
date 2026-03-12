@@ -1,103 +1,100 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { createCourse } from "../../../api/courses.api";
+
+const initialState = {
+  title: "",
+  code: "",
+  creditHours: "",
+  semester: "",
+  level: "",
+};
 
 export default function CreateCoursePage() {
-  const [formData, setFormData] = useState({
-    code: "",
-    title: "",
-    creditHours: "",
-    semester: "",
-    level: "",
-  });
+  const [formData, setFormData] = useState(initialState);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-
+  const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [e.target.name]: e.target.value,
     }));
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log("Course created:", formData);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+    setError("");
 
-    setFormData({
-      code: "",
-      title: "",
-      creditHours: "",
-      semester: "",
-      level: "",
-    });
+    try {
+      await createCourse({
+        ...formData,
+        creditHours: Number(formData.creditHours),
+        semester: Number(formData.semester),
+        level: Number(formData.level),
+      });
+
+      setMessage("Course created successfully");
+      setFormData(initialState);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to create course");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="page">
-      <h1>Create Course</h1>
+    <div style={{ maxWidth: "500px" }}>
+      <h2>Create Course</h2>
 
-      <form className="card form" onSubmit={handleSubmit}>
-        <label>
-          Course Code
-          <input
-            type="text"
-            name="code"
-            value={formData.code}
-            onChange={handleChange}
-            placeholder="e.g. CSC201"
-            required
-          />
-        </label>
+      <form onSubmit={handleSubmit}>
+        <input
+          name="title"
+          placeholder="Course title"
+          value={formData.title}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <label>
-          Course Title
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            placeholder="e.g. Data Structures"
-            required
-          />
-        </label>
+        <input
+          name="code"
+          placeholder="Course code"
+          value={formData.code}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <label>
-          Credit Hours
-          <input
-            type="number"
-            name="creditHours"
-            value={formData.creditHours}
-            onChange={handleChange}
-            placeholder="e.g. 3"
-            required
-          />
-        </label>
+        <input
+          name="creditHours"
+          placeholder="Credit hours"
+          value={formData.creditHours}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <label>
-          Semester
-          <input
-            type="number"
-            name="semester"
-            value={formData.semester}
-            onChange={handleChange}
-            placeholder="e.g. 1"
-            required
-          />
-        </label>
+        <input
+          name="semester"
+          placeholder="Semester"
+          value={formData.semester}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <label>
-          Level
-          <input
-            type="text"
-            name="level"
-            value={formData.level}
-            onChange={handleChange}
-            placeholder="e.g. 100"
-            required
-          />
-        </label>
+        <input
+          name="level"
+          placeholder="Level"
+          value={formData.level}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <button type="submit" className="btn">
-          Create Course
+        {message && <p style={{ color: "green" }}>{message}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Creating..." : "Create Course"}
         </button>
       </form>
     </div>

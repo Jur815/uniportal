@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../store/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -9,74 +9,69 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "student",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [e.target.name]: e.target.value,
     }));
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const fakeUser = {
-      name: formData.role === "admin" ? "Admin User" : "Student User",
-      email: formData.email,
-      role: formData.role,
-    };
+    try {
+      const data = await login(formData.email, formData.password);
+      const role = data.data.user.role;
 
-    login(fakeUser);
-
-    if (fakeUser.role === "admin") {
-      navigate("/admin/courses");
-    } else {
-      navigate("/student/courses");
+      if (role === "admin") {
+        navigate("/admin/courses/new");
+      } else {
+        navigate("/courses");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="page auth-page">
-      <h1>Login</h1>
+    <div style={{ maxWidth: "400px" }}>
+      <h2>Login</h2>
 
-      <form className="card form" onSubmit={handleSubmit}>
-        <label>
-          Email
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: "12px" }}>
           <input
             type="email"
             name="email"
+            placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="Enter email"
-            required
+            style={{ width: "100%", padding: "10px" }}
           />
-        </label>
+        </div>
 
-        <label>
-          Password
+        <div style={{ marginBottom: "12px" }}>
           <input
             type="password"
             name="password"
+            placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            placeholder="Enter password"
-            required
+            style={{ width: "100%", padding: "10px" }}
           />
-        </label>
+        </div>
 
-        <label>
-          Role
-          <select name="role" value={formData.role} onChange={handleChange}>
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-          </select>
-        </label>
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
-        <button type="submit" className="btn">
-          Login
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </button>
       </form>
     </div>

@@ -1,75 +1,107 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getMyProfile, updateMyProfile } from "../../../api/profile.api";
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
-    fullName: "Peter Jur",
-    registrationNumber: "UNI-2026-001",
-    department: "Computer Science",
     phone: "",
+    address: "",
+    dateOfBirth: "",
+    gender: "",
   });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getMyProfile();
+        const profile = data.data.profile;
 
+        setFormData({
+          phone: profile?.phone || "",
+          address: profile?.address || "",
+          dateOfBirth: profile?.dateOfBirth?.split("T")[0] || "",
+          gender: profile?.gender || "",
+        });
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [e.target.name]: e.target.value,
     }));
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log("Profile updated:", formData);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage("");
+    setError("");
+
+    try {
+      await updateMyProfile(formData);
+      setMessage("Profile updated successfully");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
   };
 
+  if (loading) return <div>Loading profile...</div>;
+
   return (
-    <div className="page">
-      <h1>Student Profile</h1>
+    <div style={{ maxWidth: "500px" }}>
+      <h2>My Profile</h2>
 
-      <form className="card form" onSubmit={handleSubmit}>
-        <label>
-          Full Name
-          <input
-            type="text"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
-          />
-        </label>
+      <form onSubmit={handleSubmit}>
+        <input
+          name="phone"
+          placeholder="Phone"
+          value={formData.phone}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <label>
-          Registration Number
-          <input
-            type="text"
-            name="registrationNumber"
-            value={formData.registrationNumber}
-            onChange={handleChange}
-          />
-        </label>
+        <input
+          name="address"
+          placeholder="Address"
+          value={formData.address}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <label>
-          Department
-          <input
-            type="text"
-            name="department"
-            value={formData.department}
-            onChange={handleChange}
-          />
-        </label>
+        <input
+          type="date"
+          name="dateOfBirth"
+          value={formData.dateOfBirth}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <label>
-          Phone
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Enter phone number"
-          />
-        </label>
+        <input
+          name="gender"
+          placeholder="Gender"
+          value={formData.gender}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+        />
 
-        <button type="submit" className="btn">
-          Update Profile
+        {message && <p style={{ color: "green" }}>{message}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        <button type="submit" disabled={saving}>
+          {saving ? "Saving..." : "Update Profile"}
         </button>
       </form>
     </div>

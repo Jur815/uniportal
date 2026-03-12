@@ -1,30 +1,79 @@
-const courses = [
-  {
-    id: 1,
-    code: "CSC101",
-    title: "Introduction to Computer Science",
-    creditHours: 3,
-  },
-  { id: 2, code: "MAT101", title: "Calculus I", creditHours: 3 },
-  { id: 3, code: "ENG101", title: "Academic Writing", creditHours: 2 },
-];
+import React, { useEffect, useState } from "react";
+import { getAllCourses } from "../../../api/courses.api";
+import { enrollInCourse } from "../../../api/enrollments.api";
+import { useAuth } from "../../auth/context/AuthContext";
 
 export default function CoursesPage() {
-  return (
-    <div className="page">
-      <h1>Courses</h1>
+  const { user } = useAuth();
 
-      <div className="grid">
-        {courses.map((course) => (
-          <div key={course.id} className="card">
-            <h3>
-              {course.code} - {course.title}
-            </h3>
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const data = await getAllCourses();
+        setCourses(data.data.courses || []);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load courses");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  const handleEnroll = async (courseId) => {
+    try {
+      setActionLoadingId(courseId);
+      await enrollInCourse(courseId);
+      alert("Enrolled successfully");
+    } catch (err) {
+      alert(err.response?.data?.message || "Enrollment failed");
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
+  if (loading) return <div>Loading courses...</div>;
+  if (error) return <div>{error}</div>;
+
+  return (
+    <div>
+      <h2>Courses</h2>
+
+      {courses.length === 0 ? (
+        <p>No courses found.</p>
+      ) : (
+        courses.map((course) => (
+          <div
+            key={course._id}
+            style={{
+              border: "1px solid #ddd",
+              padding: "16px",
+              marginBottom: "12px",
+              borderRadius: "8px",
+            }}
+          >
+            <h3>{course.title}</h3>
+            <p>Code: {course.code}</p>
             <p>Credit Hours: {course.creditHours}</p>
-            <button className="btn">Enroll</button>
+            <p>Semester: {course.semester}</p>
+
+            {user?.role === "student" && (
+              <button
+                onClick={() => handleEnroll(course._id)}
+                disabled={actionLoadingId === course._id}
+              >
+                {actionLoadingId === course._id ? "Enrolling..." : "Enroll"}
+              </button>
+            )}
           </div>
-        ))}
-      </div>
+        ))
+      )}
     </div>
   );
 }
