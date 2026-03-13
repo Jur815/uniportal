@@ -42,8 +42,21 @@ export default function ProfilePage() {
     }));
   };
 
+  const validate = () => {
+    if (!formData.phone.trim()) return "Phone is required";
+    if (!formData.address.trim()) return "Address is required";
+    return "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setSaving(true);
     setMessage("");
     setError("");

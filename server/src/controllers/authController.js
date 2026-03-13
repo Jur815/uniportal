@@ -11,12 +11,10 @@ exports.register = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({
-          status: "fail",
-          message: "Name, email and password are required",
-        });
+      return res.status(400).json({
+        status: "fail",
+        message: "Name, email and password are required",
+      });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -57,7 +55,7 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) { 
+    if (!email || !password) {
       return res
         .status(400)
         .json({ status: "fail", message: "Email and password are required" });
@@ -92,4 +90,17 @@ exports.login = async (req, res) => {
   } catch (err) {
     res.status(500).json({ status: "error", message: err.message });
   }
+};
+
+// const User = require("../models/User");
+
+exports.getMe = async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password");
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      user,
+    },
+  });
 };

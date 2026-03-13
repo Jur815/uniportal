@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../features/auth/context/AuthContext";
+import { useAuth } from "../../features/auth/context/useAuth";
 
 export default function Sidebar() {
   const { user } = useAuth();

@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../../features/auth/context/AuthContext";
+import { useAuth } from "../../features/auth/context/useAuth";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -12,6 +12,7 @@ export default function Navbar() {
         <span className="navbar-user">
           {user ? `${user.name} (${user.role})` : "Guest"}
         </span>
+
         {user && (
           <button className="btn btn-outline" onClick={logout}>
             Logout

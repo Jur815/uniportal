@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../../auth/context/AuthContext";
+import { useAuth } from "../../auth/context/useAuth";
 import Card from "../../../components/ui/Card";
 import PageHeader from "../../../components/ui/PageHeader";
 

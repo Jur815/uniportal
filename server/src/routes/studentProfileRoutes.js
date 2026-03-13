@@ -1,15 +1,12 @@
 const express = require("express");
-const { protect, restrictTo } = require("../middlewares/auth");
-const ctrl = require("../controllers/studentProfileController");
+const profileController = require("../controllers/profileController");
+const { protect } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-router.get("/me", protect, restrictTo("student"), ctrl.getMyProfile);
-router.post(
-  "/me",
-  protect,
-  restrictTo("student"),
-  ctrl.createOrUpdateMyProfile,
-);
+router.use(protect);
+
+router.get("/me", profileController.getMyProfile);
+router.patch("/me", profileController.updateMyProfile);
 
 module.exports = router;

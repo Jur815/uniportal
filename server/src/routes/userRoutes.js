@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { protect, restrictTo } = require("../middlewares/auth");
+const { protect, restrictTo } = require("../middlewares/authMiddleware");
 
 router.get("/me", protect, (req, res) => {
   res.json({

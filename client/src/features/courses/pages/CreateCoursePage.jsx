@@ -31,6 +31,31 @@ export default function CreateCoursePage() {
     setMessage("");
     setError("");
 
+    if (!formData.title.trim()) {
+      setLoading(false);
+      return setError("Title is required");
+    }
+
+    if (!formData.code.trim()) {
+      setLoading(false);
+      return setError("Code is required");
+    }
+
+    if (!formData.creditHours) {
+      setLoading(false);
+      return setError("Credit hours are required");
+    }
+
+    if (!formData.semester) {
+      setLoading(false);
+      return setError("Semester is required");
+    }
+
+    if (!formData.level) {
+      setLoading(false);
+      return setError("Level is required");
+    }
+
     try {
       await createCourse({
         ...formData,
@@ -68,18 +93,21 @@ export default function CreateCoursePage() {
           />
           <input
             name="creditHours"
+            type="number"
             placeholder="Credit hours"
             value={formData.creditHours}
             onChange={handleChange}
           />
           <input
             name="semester"
+            type="number"
             placeholder="Semester"
             value={formData.semester}
             onChange={handleChange}
           />
           <input
             name="level"
+            type="number"
             placeholder="Level"
             value={formData.level}
             onChange={handleChange}

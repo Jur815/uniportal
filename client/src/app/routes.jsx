@@ -11,7 +11,8 @@ import MyCoursesPage from "../features/courses/pages/MyCoursesPage";
 import CreateCoursePage from "../features/courses/pages/CreateCoursePage";
 import StudentDashboardPage from "../features/dashboard/pages/StudentDashboardPage";
 import AdminDashboardPage from "../features/dashboard/pages/AdminDashboardPage";
-import { useAuth } from "../features/auth/context/AuthContext";
+import { useAuth } from "../features/auth/context/useAuth";
+import ProfilePage from "../features/profile/pages/ProfilePage";
 
 function DashboardHome() {
   const { user } = useAuth();
@@ -65,6 +66,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedRoles={["admin"]}>
                 <CreateCoursePage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "profile",
+            element: (
+              <ProtectedRoute allowedRoles={["student", "admin"]}>
+                <ProfilePage />
               </ProtectedRoute>
             ),
           },

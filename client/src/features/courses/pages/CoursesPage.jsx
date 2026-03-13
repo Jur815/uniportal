@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllCourses } from "../../../api/courses.api";
 import { enrollInCourse } from "../../../api/enrollments.api";
-import { useAuth } from "../../auth/context/AuthContext";
+import { useAuth } from "../../auth/context/useAuth";
 import CourseCard from "../components/CourseCard";
 import Loader from "../../../components/ui/Loader";
 import EmptyState from "../../../components/ui/EmptyState";
