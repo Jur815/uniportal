@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import { createCourse } from "../../../api/courses.api";
 import PageHeader from "../../../components/ui/PageHeader";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 
-const initialState = {
+const initialState = { 
   title: "",
   code: "",
   creditHours: "",
@@ -25,36 +26,36 @@ export default function CreateCoursePage() {
     }));
   };
 
+  const validate = () => {
+    if (!formData.title.trim()) return "Title is required";
+    if (!formData.code.trim()) return "Course code is required";
+    if (!formData.creditHours) return "Credit hours are required";
+    if (Number(formData.creditHours) <= 0) {
+      return "Credit hours must be greater than 0";
+    }
+    if (!formData.semester) return "Semester is required";
+    if (Number(formData.semester) <= 0) {
+      return "Semester must be greater than 0";
+    }
+    if (!formData.level) return "Level is required";
+    if (Number(formData.level) <= 0) {
+      return "Level must be greater than 0";
+    }
+    return "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
     setMessage("");
     setError("");
-
-    if (!formData.title.trim()) {
-      setLoading(false);
-      return setError("Title is required");
-    }
-
-    if (!formData.code.trim()) {
-      setLoading(false);
-      return setError("Code is required");
-    }
-
-    if (!formData.creditHours) {
-      setLoading(false);
-      return setError("Credit hours are required");
-    }
-
-    if (!formData.semester) {
-      setLoading(false);
-      return setError("Semester is required");
-    }
-
-    if (!formData.level) {
-      setLoading(false);
-      return setError("Level is required");
-    }
 
     try {
       await createCourse({
@@ -65,9 +66,12 @@ export default function CreateCoursePage() {
       });
 
       setMessage("Course created successfully.");
+      toast.success("Course created successfully.");
       setFormData(initialState);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create course");
+      const msg = err?.response?.data?.message || "Failed to create course";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

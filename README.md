@@ -195,6 +195,42 @@ POST /api/v1/auth/login
 
 ---
 
+# UniPortal
+
+A MERN university management SaaS platform for students and admins.
+
+## Features
+
+- JWT authentication
+- Role-based access control
+- Course management
+- Student enrollment
+- Profile management
+- Dashboard UI
+- Session restore with `/auth/me`
+- Toast notifications
+- Form validation
+
+## Tech Stack
+
+- React
+- Vite
+- Node.js
+- Express
+- MongoDB
+- JWT
+
+## Setup
+
+### Backend
+
+```bash
+cd server
+npm install
+npm run dev
+
+---
+
 ## 👨‍💻 Author
 
 **Peter Jur Makender Makech**

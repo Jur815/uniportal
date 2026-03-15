@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { getAllCourses } from "../../../api/courses.api";
 import { enrollInCourse } from "../../../api/enrollments.api";
 import { useAuth } from "../../auth/context/useAuth";
@@ -33,9 +34,9 @@ export default function CoursesPage() {
     try {
       setActionLoadingId(courseId);
       await enrollInCourse(courseId);
-      alert("Enrolled successfully");
+      toast.success("Enrolled successfully");
     } catch (err) {
-      alert(err.response?.data?.message || "Enrollment failed");
+      toast.error(err.response?.data?.message || "Enrollment failed");
     } finally {
       setActionLoadingId("");
     }

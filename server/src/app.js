@@ -2,34 +2,41 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 
-// Routes importing
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const studentProfileRoutes = require("./routes/studentProfileRoutes");
 
-
+const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 
-// Middleware
+// CORS
 app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
   }),
 );
+
+// Body parser
 app.use(express.json());
 
-// logging (optional) — usually before routes is fine
+// Logger (development only)
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
+// Root route
 app.get("/", (req, res) => res.send("UniPortal API"));
+
+// Health check
 app.get("/api/v1/health", (req, res) =>
-  res.json({ status: "ok", message: "UniPortal API is running" }), 
+  res.json({
+    status: "ok",
+    message: "UniPortal API is running",
+  }),
 );
 
 // API routes
@@ -39,14 +46,22 @@ app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/enrollments", enrollmentRoutes);
 app.use("/api/v1/profiles", studentProfileRoutes);
 
-// app.use("/api/v1", routes);
-
 // 404 handler
-app.all(/.*/, (req, res) => { 
-  res
-    .status(404)
-    .json({ status: "fail", message: `Can't find ${req.originalUrl}` });
+// app.all("*", (req, res) => {
+//   res.status(404).json({
+//     status: "fail",
+//     message: `Can't find ${req.originalUrl}`,
+//   });
+// });
+
+app.all("/{*splat}", (req, res) => {
+  res.status(404).json({
+    status: "fail",
+    message: `Can't find ${req.originalUrl}`,
+  });
 });
 
-module.exports = app;
+// Global error handler (ALWAYS LAST)
+app.use(errorHandler);
 
+module.exports = app;

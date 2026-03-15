@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { getMyProfile, updateMyProfile } from "../../../api/profile.api";
+import Loader from "../../../components/ui/Loader";
+import PageHeader from "../../../components/ui/PageHeader";
+import Card from "../../../components/ui/Card";
+import Button from "../../../components/ui/Button";
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
@@ -45,6 +50,7 @@ export default function ProfilePage() {
   const validate = () => {
     if (!formData.phone.trim()) return "Phone is required";
     if (!formData.address.trim()) return "Address is required";
+    if (formData.phone.length < 7) return "Enter a valid phone number";
     return "";
   };
 
@@ -64,59 +70,63 @@ export default function ProfilePage() {
     try {
       await updateMyProfile(formData);
       setMessage("Profile updated successfully");
+      toast.success("Profile updated successfully");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update profile");
+      const msg = err.response?.data?.message || "Failed to update profile";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div>Loading profile...</div>;
+  if (loading) return <Loader text="Loading profile..." />;
 
   return (
-    <div style={{ maxWidth: "500px" }}>
-      <h2>My Profile</h2>
+    <div>
+      <PageHeader
+        title="My Profile"
+        subtitle="View and update your profile information."
+      />
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="phone"
-          placeholder="Phone"
-          value={formData.phone}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
+      <Card>
+        <form className="form" onSubmit={handleSubmit}>
+          <input
+            name="phone"
+            placeholder="Phone"
+            value={formData.phone}
+            onChange={handleChange}
+          />
 
-        <input
-          name="address"
-          placeholder="Address"
-          value={formData.address}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
+          <input
+            name="address"
+            placeholder="Address"
+            value={formData.address}
+            onChange={handleChange}
+          />
 
-        <input
-          type="date"
-          name="dateOfBirth"
-          value={formData.dateOfBirth}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
+          <input
+            type="date"
+            name="dateOfBirth"
+            value={formData.dateOfBirth}
+            onChange={handleChange}
+          />
 
-        <input
-          name="gender"
-          placeholder="Gender"
-          value={formData.gender}
-          onChange={handleChange}
-          style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        />
+          <input
+            name="gender"
+            placeholder="Gender"
+            value={formData.gender}
+            onChange={handleChange}
+          />
 
-        {message && <p style={{ color: "green" }}>{message}</p>}
-        {error && <p style={{ color: "red" }}>{error}</p>}
+          {message && <p className="success-text">{message}</p>}
+          {error && <p className="error-text">{error}</p>}
 
-        <button type="submit" disabled={saving}>
-          {saving ? "Saving..." : "Update Profile"}
-        </button>
-      </form>
+          <Button type="submit" disabled={saving}>
+            {saving ? "Saving..." : "Update Profile"}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }
