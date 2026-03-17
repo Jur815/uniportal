@@ -12,8 +12,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL || "http://localhost:5173",
-    "https://uniportal.vercel.app"],
+    origin: [
+      process.env.CLIENT_URL || "http://localhost:5173",
+      "https://uniportal-rho.vercel.app",
+    ],
     credentials: true,
   }),
 );
