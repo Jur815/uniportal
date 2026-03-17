@@ -26,6 +26,11 @@ app.get("/api/v1/health", (req, res) => {
     message: "UniPortal API is running",
   });
 });
+
+// test
+app.get("/", (req, res) => {
+  res.send("UniPortal backend live");
+});
  
 // Routes
 app.use("/api/v1/auth", authRoutes);
