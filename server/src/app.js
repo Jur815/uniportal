@@ -8,7 +8,7 @@ const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const studentProfileRoutes = require("./routes/studentProfileRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 
-const app = express();
+const app = express(); 
 
 app.use(
   cors({
@@ -16,7 +16,7 @@ app.use(
     credentials: true,
   }),
 );
-
+   
 app.use(express.json());
 
 // Health check (Day 9 requirement)
@@ -26,10 +26,10 @@ app.get("/api/v1/health", (req, res) => {
     message: "UniPortal API is running",
   });
 });
-
+ 
 // Routes
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/users", userRoutes); 
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/enrollments", enrollmentRoutes);
 app.use("/api/v1/profiles", studentProfileRoutes);
