@@ -1,7 +1,20 @@
 import http from "./http";
 
-export const enrollInCourse = async (courseId) => {
-  const response = await http.post("/enrollments", { courseId });
+export const createEnrollment = async ({ academicYear, semester, courses }) => {
+  const response = await http.post("/enrollments", {
+    academicYear,
+    semester,
+    courses,
+  });
+  return response.data;
+};
+
+export const enrollInCourse = async ({ academicYear, semester, courseId }) => {
+  const response = await http.post("/enrollments", {
+    academicYear,
+    semester,
+    courses: [courseId],
+  });
   return response.data;
 };
 
