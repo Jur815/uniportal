@@ -10,7 +10,6 @@ const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 
-// ✅ PRODUCTION-LEVEL CORS
 const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL].filter(
   Boolean,
 );
@@ -29,7 +28,6 @@ app.use(
 
 app.use(express.json());
 
-// ✅ Health check
 app.get("/api/v1/health", (req, res) => {
   res.status(200).json({
     status: "ok",
@@ -37,27 +35,12 @@ app.get("/api/v1/health", (req, res) => {
   });
 });
 
-// ✅ Root test route (deployment check)
-app.get("/", (req, res) => {
-  res.send("UniPortal backend live 🚀");
-});
-
-// ✅ Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/enrollments", enrollmentRoutes);
 app.use("/api/v1/student-profile", studentProfileRoutes);
 
-// ✅ 404 handler
-app.all("*", (req, res) => {
-  res.status(404).json({
-    status: "fail",
-    message: `Can't find ${req.originalUrl}`,
-  });
-});
-
-// ✅ Global error handler (ALWAYS LAST)
 app.use(errorHandler);
 
 module.exports = app;
