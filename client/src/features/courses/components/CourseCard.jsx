@@ -25,7 +25,7 @@ export default function CourseCard({
       </p>
 
       {showEnroll && (
-        <Button onClick={() => onEnroll(course._id)} disabled={loading}>
+        <Button onClick={() => onEnroll(course)} disabled={loading}>
           {loading ? "Enrolling..." : "Enroll"}
         </Button>
       )}

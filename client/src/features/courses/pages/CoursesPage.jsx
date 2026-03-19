@@ -30,10 +30,16 @@ export default function CoursesPage() {
     fetchCourses();
   }, []);
 
-  const handleEnroll = async (courseId) => {
+  const handleEnroll = async (course) => {
     try {
-      setActionLoadingId(courseId);
-      await enrollInCourse(courseId);
+      setActionLoadingId(course._id);
+
+      await enrollInCourse({
+        academicYear: "2025/2026",
+        semester: course.semester,
+        courseId: course._id,
+      });
+
       toast.success("Enrolled successfully");
     } catch (err) {
       toast.error(err.response?.data?.message || "Enrollment failed");
