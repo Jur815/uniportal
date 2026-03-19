@@ -19,43 +19,127 @@ exports.enroll = async (req, res) => {
     });
   }
 
-  // validate course ids and compute credits
+  const sem = Number(semester);
+
+  if (![1, 2].includes(sem)) {
+    return res.status(400).json({
+      status: "fail",
+      message: "semester must be 1 or 2",
+    });
+  }
+
+  const invalidIds = courses.filter(
+    (id) => !mongoose.Types.ObjectId.isValid(id),
+  );
+
+  if (invalidIds.length > 0) {
+    return res.status(400).json({
+      status: "fail",
+      message: "One or more course IDs are invalid.",
+      invalidIds,
+    });
+  }
+
+  const normalizedCourseIds = [...new Set(courses.map(String))];
+
   const courseDocs = await Course.find({
-    _id: { $in: courses.map((id) => new mongoose.Types.ObjectId(id)) },
+    _id: { $in: normalizedCourseIds },
     isActive: true,
-    semester: Number(semester),
+    semester: sem,
   });
 
-  if (courseDocs.length !== courses.length) {
+  if (courseDocs.length !== normalizedCourseIds.length) {
     return res.status(400).json({
       status: "fail",
       message:
-        "One or more course IDs are invalid (or inactive / wrong semester).",
+        "One or more course IDs are invalid, inactive, or belong to the wrong semester.",
     });
   }
 
-  const totalCredits = courseDocs.reduce((sum, c) => sum + c.creditHours, 0);
-  if (totalCredits > MAX_CREDITS) {
-    return res.status(400).json({
-      status: "fail",
-      message: `Credit limit exceeded. Max ${MAX_CREDITS}, selected ${totalCredits}.`,
-    });
-  }
-
-  // Create one enrollment per student per term (unique index enforces this)
-  const enrollment = await Enrollment.create({
+  const existingEnrollment = await Enrollment.findOne({
     student: req.user._id,
     academicYear,
-    semester: Number(semester),
-    courses,
-    totalCredits,
+    semester: sem,
   });
 
-  const populated = await Enrollment.findById(enrollment._id)
+  if (!existingEnrollment) {
+    const totalCredits = courseDocs.reduce(
+      (sum, c) => sum + Number(c.creditHours || 0),
+      0,
+    );
+
+    if (totalCredits > MAX_CREDITS) {
+      return res.status(400).json({
+        status: "fail",
+        message: `Credit limit exceeded. Max ${MAX_CREDITS}, selected ${totalCredits}.`,
+      });
+    }
+
+    const enrollment = await Enrollment.create({
+      student: req.user._id,
+      academicYear,
+      semester: sem,
+      courses: normalizedCourseIds,
+      totalCredits,
+    });
+
+    const populated = await Enrollment.findById(enrollment._id)
+      .populate("courses", "title code creditHours semester level")
+      .populate("student", "name email");
+
+    return res.status(201).json({
+      status: "success",
+      message: "Enrollment created successfully.",
+      data: { enrollment: populated },
+    });
+  }
+
+  const existingCourseIds = existingEnrollment.courses.map((id) => String(id));
+
+  const newCourseIds = normalizedCourseIds.filter(
+    (id) => !existingCourseIds.includes(id),
+  );
+
+  if (newCourseIds.length === 0) {
+    return res.status(400).json({
+      status: "fail",
+      message: "You are already enrolled in this course.",
+    });
+  }
+
+  const newCourseDocs = courseDocs.filter((course) =>
+    newCourseIds.includes(String(course._id)),
+  );
+
+  const addedCredits = newCourseDocs.reduce(
+    (sum, c) => sum + Number(c.creditHours || 0),
+    0,
+  );
+
+  const currentCredits = Number(existingEnrollment.totalCredits || 0);
+  const updatedCredits = currentCredits + addedCredits;
+
+  if (updatedCredits > MAX_CREDITS) {
+    return res.status(400).json({
+      status: "fail",
+      message: `Credit limit exceeded. Max ${MAX_CREDITS}, attempted total ${updatedCredits}.`,
+    });
+  }
+
+  existingEnrollment.courses.push(...newCourseIds);
+  existingEnrollment.totalCredits = updatedCredits;
+
+  await existingEnrollment.save();
+
+  const populated = await Enrollment.findById(existingEnrollment._id)
     .populate("courses", "title code creditHours semester level")
     .populate("student", "name email");
 
-  res.status(201).json({ status: "success", data: { enrollment: populated } });
+  return res.status(200).json({
+    status: "success",
+    message: "Enrollment updated successfully.",
+    data: { enrollment: populated },
+  });
 };
 
 exports.getMyCourses = async (req, res) => {
@@ -88,18 +172,16 @@ exports.getMyCourses = async (req, res) => {
       level: c.level,
       academicYear: e.academicYear,
       enrollmentStatus: e.status,
-      enrollmentId: e._id, // helpful for drop/approve later
+      enrollmentId: e._id,
     })),
   );
 
-  // Stable, UI-friendly ordering
   courses.sort((a, b) => {
-    // academicYear like "2025/2026" -> compare start year
     const aStart = Number(String(a.academicYear).slice(0, 4)) || 0;
     const bStart = Number(String(b.academicYear).slice(0, 4)) || 0;
 
-    if (aStart !== bStart) return bStart - aStart; // latest year first
-    if (a.semester !== b.semester) return a.semester - b.semester; // sem 1 then 2
+    if (aStart !== bStart) return bStart - aStart;
+    if (a.semester !== b.semester) return a.semester - b.semester;
     if (a.level !== b.level) return a.level - b.level;
     return String(a.code).localeCompare(String(b.code));
   });
