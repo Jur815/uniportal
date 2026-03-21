@@ -3,6 +3,7 @@ const Enrollment = require("../models/Enrollment");
 const Course = require("../models/Course");
 
 const MAX_CREDITS = 24;
+const ALLOWED_STATUSES = ["pending", "approved", "rejected"];
 
 exports.enroll = async (req, res) => {
   const { academicYear, semester, courses } = req.body;
@@ -81,6 +82,7 @@ exports.enroll = async (req, res) => {
       semester: sem,
       courses: normalizedCourseIds,
       totalCredits,
+      status: "pending",
     });
 
     const populated = await Enrollment.findById(enrollment._id)
@@ -91,6 +93,14 @@ exports.enroll = async (req, res) => {
       status: "success",
       message: "Enrollment created successfully.",
       data: { enrollment: populated },
+    });
+  }
+
+  if (existingEnrollment.status === "approved") {
+    return res.status(400).json({
+      status: "fail",
+      message:
+        "This enrollment has already been approved and cannot be modified.",
     });
   }
 
@@ -128,6 +138,7 @@ exports.enroll = async (req, res) => {
 
   existingEnrollment.courses.push(...newCourseIds);
   existingEnrollment.totalCredits = updatedCredits;
+  existingEnrollment.status = "pending";
 
   await existingEnrollment.save();
 
@@ -200,5 +211,98 @@ exports.getMyCourses = async (req, res) => {
     results: courses.length,
     summary,
     data: { courses, enrollments },
+  });
+};
+
+exports.getAllEnrollments = async (req, res) => {
+  const filter = {};
+
+  if (req.query.academicYear) {
+    filter.academicYear = req.query.academicYear;
+  }
+
+  if (req.query.semester !== undefined && req.query.semester !== "") {
+    const sem = Number(req.query.semester);
+    if (![1, 2].includes(sem)) {
+      return res.status(400).json({
+        status: "fail",
+        message: "semester must be 1 or 2",
+      });
+    }
+    filter.semester = sem;
+  }
+
+  if (req.query.status) {
+    if (!ALLOWED_STATUSES.includes(req.query.status)) {
+      return res.status(400).json({
+        status: "fail",
+        message: `status must be one of: ${ALLOWED_STATUSES.join(", ")}`,
+      });
+    }
+    filter.status = req.query.status;
+  }
+
+  const enrollments = await Enrollment.find(filter)
+    .populate("student", "name email role")
+    .populate("courses", "title code creditHours semester level")
+    .sort({ createdAt: -1 });
+
+  const summary = enrollments.reduce(
+    (acc, enrollment) => {
+      acc.total += 1;
+      acc.pending += enrollment.status === "pending" ? 1 : 0;
+      acc.approved += enrollment.status === "approved" ? 1 : 0;
+      acc.rejected += enrollment.status === "rejected" ? 1 : 0;
+      return acc;
+    },
+    { total: 0, pending: 0, approved: 0, rejected: 0 },
+  );
+
+  res.status(200).json({
+    status: "success",
+    results: enrollments.length,
+    summary,
+    data: { enrollments },
+  });
+};
+
+exports.updateEnrollmentStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Invalid enrollment ID",
+    });
+  }
+
+  if (!ALLOWED_STATUSES.includes(status) || status === "pending") {
+    return res.status(400).json({
+      status: "fail",
+      message: 'status must be either "approved" or "rejected"',
+    });
+  }
+
+  const enrollment = await Enrollment.findById(id);
+
+  if (!enrollment) {
+    return res.status(404).json({
+      status: "fail",
+      message: "Enrollment not found",
+    });
+  }
+
+  enrollment.status = status;
+  await enrollment.save();
+
+  const populated = await Enrollment.findById(enrollment._id)
+    .populate("student", "name email role")
+    .populate("courses", "title code creditHours semester level");
+
+  return res.status(200).json({
+    status: "success",
+    message: `Enrollment ${status} successfully.`,
+    data: { enrollment: populated },
   });
 };

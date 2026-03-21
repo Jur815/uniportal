@@ -10,6 +10,7 @@ import DashboardPage from "./features/dashboard/pages/DashboardPage";
 import CoursesPage from "./features/courses/pages/CoursesPage";
 import MyCoursesPage from "./features/courses/pages/MyCoursesPage";
 import StudentProfilePage from "./features/students/pages/StudentProfilePage";
+import AdminEnrollmentsPage from "./features/enrollments/pages/AdminEnrollmentsPage";
 
 import Loader from "./components/ui/Loader";
 import Layout from "./components/layout/Layout";
@@ -59,7 +60,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Protected layout routes */}
+      {/* Protected Layout */}
       <Route
         path="/"
         element={
@@ -70,8 +71,11 @@ function AppRoutes() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
 
+        {/* Common */}
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="profile" element={<StudentProfilePage />} />
 
+        {/* Student */}
         <Route
           path="courses"
           element={
@@ -90,11 +94,12 @@ function AppRoutes() {
           }
         />
 
+        {/* Admin */}
         <Route
-          path="profile"
+          path="admin/enrollments"
           element={
-            <ProtectedRoute allowedRoles={["student"]}>
-              <StudentProfilePage />
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminEnrollmentsPage />
             </ProtectedRoute>
           }
         />

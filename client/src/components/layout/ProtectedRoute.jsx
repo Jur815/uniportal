@@ -1,20 +1,21 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../features/auth/context/useAuth";
+import Loader from "../ui/Loader";
 
-export default function ProtectedRoute({ children, allowedRoles }) {
+export default function ProtectedRoute({ children, allowedRoles = [] }) {
   const { user, isAuthenticated, authLoading } = useAuth();
   const location = useLocation();
 
   if (authLoading) {
-    return <div style={{ padding: "20px" }}>Loading...</div>;
+    return <Loader text="Checking authentication..." />;
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

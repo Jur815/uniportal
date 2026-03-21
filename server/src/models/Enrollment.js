@@ -7,22 +7,39 @@ const enrollmentSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    academicYear: { type: String, required: true }, // "2025/2026"
-    semester: { type: Number, required: true, enum: [1, 2] },
+    academicYear: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    semester: {
+      type: Number,
+      required: true,
+      enum: [1, 2],
+    },
     courses: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+        required: true,
+      },
     ],
-    totalCredits: { type: Number, required: true, min: 1 },
+    totalCredits: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
 
-// prevent duplicate enrollment per student per term
 enrollmentSchema.index(
   { student: 1, academicYear: 1, semester: 1 },
   { unique: true },

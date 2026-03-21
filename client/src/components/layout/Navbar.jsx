@@ -5,15 +5,25 @@ import { useAuth } from "../../features/auth/context/useAuth";
 export default function Navbar() {
   const { user, logout } = useAuth();
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <header className="navbar">
-      {/* LEFT */}
       <div className="navbar-left">
-        <div className="navbar-brand">UniPortal</div>
+        <div className="navbar-brand">
+          <Link to={user ? "/dashboard" : "/"} className="navbar-brand-text">
+            UniPortal
+          </Link>
+        </div>
 
         {user && (
           <nav className="navbar-links">
-            {/* STUDENT */}
             {user.role === "student" && (
               <>
                 <Link to="/courses">Courses</Link>
@@ -21,25 +31,30 @@ export default function Navbar() {
               </>
             )}
 
-            {/* ADMIN */}
             {user.role === "admin" && (
               <>
                 <Link to="/courses">Courses</Link>
-                <Link to="/create-course">Create Course</Link>
+                <Link to="/admin/enrollments">Enrollments</Link>
               </>
             )}
           </nav>
         )}
       </div>
 
-      {/* RIGHT */}
       <div className="navbar-right">
-        <span className="navbar-user">
-          {user ? `${user.name} (${user.role})` : "Guest"}
-        </span>
+        <div className="navbar-user-block">
+          <span className="navbar-user-name">{user?.name || "Guest"}</span>
+          <span className="navbar-user-role">
+            {user?.role ? user.role.toUpperCase() : "NOT SIGNED IN"}
+          </span>
+        </div>
 
         {user && (
-          <button className="btn btn-outline" onClick={logout}>
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={handleLogout}
+          >
             Logout
           </button>
         )}
