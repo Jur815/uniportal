@@ -10,7 +10,7 @@ export const enrollInCourse = async ({ academicYear, semester, courseId }) => {
   return response.data;
 };
 
-export const getMyCourses = async () => {
-  const response = await http.get("/enrollments/my");
+export const getMyCourses = async (params = {}) => {
+  const response = await http.get("/enrollments/my", { params });
   return response.data;
 };

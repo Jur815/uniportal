@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../features/auth/context/useAuth";
 
 export default function Navbar() {
@@ -6,8 +7,32 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <div className="navbar-brand">UniPortal</div>
+      {/* LEFT */}
+      <div className="navbar-left">
+        <div className="navbar-brand">UniPortal</div>
 
+        {user && (
+          <nav className="navbar-links">
+            {/* STUDENT */}
+            {user.role === "student" && (
+              <>
+                <Link to="/courses">Courses</Link>
+                <Link to="/my-courses">My Courses</Link>
+              </>
+            )}
+
+            {/* ADMIN */}
+            {user.role === "admin" && (
+              <>
+                <Link to="/courses">Courses</Link>
+                <Link to="/create-course">Create Course</Link>
+              </>
+            )}
+          </nav>
+        )}
+      </div>
+
+      {/* RIGHT */}
       <div className="navbar-right">
         <span className="navbar-user">
           {user ? `${user.name} (${user.role})` : "Guest"}
