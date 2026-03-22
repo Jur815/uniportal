@@ -2,18 +2,18 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
-import { AuthProvider } from "./features/auth/context/AuthContext";
-import { useAuth } from "./features/auth/context/useAuth";
+import { AuthProvider } from "../features/auth/context/AuthContext";
+import { useAuth } from "../features/auth/context/useAuth";
 
-import LoginPage from "./features/auth/pages/LoginPage";
-import DashboardPage from "./features/dashboard/pages/DashboardPage";
-import CoursesPage from "./features/courses/pages/CoursesPage";
-import MyCoursesPage from "./features/courses/pages/MyCoursesPage";
-import StudentProfilePage from "./features/students/pages/StudentProfilePage";
-import AdminEnrollmentsPage from "./features/enrollments/pages/AdminEnrollmentsPage";
+import LoginPage from "../features/auth/pages/LoginPage";
+import DashboardPage from "../features/dashboard/pages/DashboardPage";
+import CoursesPage from "../features/courses/pages/CoursesPage";
+import MyCoursesPage from "../features/courses/pages/MyCoursesPage";
+import StudentProfilePage from "../features/students/pages/StudentProfilePage";
+import AdminEnrollmentsPage from "../features/enrollments/pages/AdminEnrollmentsPage";
 
-import Loader from "./components/ui/Loader";
-import Layout from "./components/layout/Layout";
+import Loader from "../components/ui/Loader";
+import Layout from "../components/layout/Layout";
 
 function ProtectedRoute({ children, allowedRoles = [] }) {
   const { user, authLoading } = useAuth();
