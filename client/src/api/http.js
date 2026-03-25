@@ -1,17 +1,12 @@
 import axios from "axios";
 
-console.log("API URL:", import.meta.env.VITE_API_URL);
+// Debug only in development
+if (import.meta.env.DEV) {
+  console.log("API URL:", import.meta.env.VITE_API_URL);
+}
 
 const http = axios.create({
-  // baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
-  // baseURL: "https://uniportal-8ejm.onrender.com/api/v1",
-  // headers: {
-  //   "Content-Type": "application/json",
-  // },
-  baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
 });
 
 // Attach token automatically

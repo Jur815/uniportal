@@ -38,7 +38,7 @@ export default function Navbar() {
               </>
             )}
           </nav>
-        )}
+        )} 
       </div>
 
       <div className="navbar-right">
