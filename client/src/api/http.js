@@ -5,8 +5,16 @@ if (import.meta.env.DEV) {
   console.log("API URL:", import.meta.env.VITE_API_URL);
 }
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? "http://localhost:5000/api/v1" : "");
+
+if (!API_BASE_URL) {
+  throw new Error("VITE_API_URL is required for production builds");
+}
+
 const http = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
+  baseURL: API_BASE_URL,
 });
 
 // Attach token automatically

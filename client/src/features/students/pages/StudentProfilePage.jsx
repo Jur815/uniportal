@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../auth/context/useAuth";
+import { getMyProfile, updateMyProfile } from "../../../api/profile.api";
 
 export default function StudentProfilePage() {
   const { user } = useAuth();
@@ -13,14 +14,38 @@ export default function StudentProfilePage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
-  // Populate form when user loads
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-      });
-    }
+    let isMounted = true;
+
+    const fetchProfile = async () => {
+      if (!user) return;
+
+      try {
+        const response = await getMyProfile();
+        const profile = response?.data?.profile;
+
+        if (!isMounted) return;
+
+        setFormData({
+          name: profile?.name || user.name || "",
+          email: profile?.email || user.email || "",
+        });
+      } catch (err) {
+        if (!isMounted) return;
+
+        setFormData({
+          name: user.name || "",
+          email: user.email || "",
+        });
+        setError(err?.response?.data?.message || "Failed to load profile");
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   const handleChange = (e) => {
@@ -38,16 +63,11 @@ export default function StudentProfilePage() {
       setError("");
       setSuccess("");
 
-      // TODO: connect to API later
-      console.log("Updating profile:", formData);
-
-      // simulate success
-      setTimeout(() => {
-        setSuccess("Profile updated successfully");
-        setLoading(false);
-      }, 800);
+      await updateMyProfile(formData);
+      setSuccess("Profile updated successfully");
     } catch (err) {
-      setError("Failed to update profile");
+      setError(err?.response?.data?.message || "Failed to update profile");
+    } finally {
       setLoading(false);
     }
   };

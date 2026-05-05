@@ -228,6 +228,71 @@ A MERN university management SaaS platform for students and admins.
 cd server
 npm install
 npm run dev
+```
+
+### Frontend
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+## Deployment
+
+### Render Backend
+
+Create a Render Web Service with:
+
+- Root directory: `server`
+- Build command: `npm install`
+- Start command: `npm start`
+- Health check path: `/api/v1/health`
+
+Required backend environment variables:
+
+```env
+NODE_ENV=production
+PORT=10000
+DATABASE=your_mongodb_atlas_connection_string
+DATABASE_PASSWORD=only_required_if_DATABASE_contains_<PASSWORD>
+JWT_SECRET=your_strong_jwt_secret
+JWT_EXPIRES_IN=7d
+CLIENT_URL=https://your-vercel-app.vercel.app
+```
+
+`DATABASE` may be either a full MongoDB Atlas URI or a URI containing
+`<PASSWORD>`. If it contains `<PASSWORD>`, set `DATABASE_PASSWORD` separately.
+Do not commit real secret values.
+
+`CLIENT_URL` is used for CORS. Use the exact Vercel origin with no trailing
+slash. Multiple origins can be provided as a comma-separated list.
+
+### Vercel Frontend
+
+Create a Vercel project with:
+
+- Root directory: `client`
+- Build command: `npm run build`
+- Output directory: `dist`
+
+Required frontend environment variable:
+
+```env
+VITE_API_URL=https://your-render-service.onrender.com/api/v1
+```
+
+The frontend includes `client/vercel.json` so React Router routes refresh to
+`index.html`.
+
+After deployment, verify:
+
+```text
+GET https://your-render-service.onrender.com/api/v1/health
+```
+
+Then log in from the Vercel URL and confirm the browser network requests use
+the Render `/api/v1` base URL.
 
 ---
 

@@ -27,7 +27,7 @@ export default function CoursesPage() {
   const fetchMyCourseIds = useCallback(async () => {
     if (user?.role !== "student") return [];
 
-    const data = await getMyCourses();
+    const data = await getMyCourses({ academicYear: CURRENT_ACADEMIC_YEAR });
     const myCourses = data?.data?.courses || [];
     return myCourses.map((course) => course._id);
   }, [user?.role]);

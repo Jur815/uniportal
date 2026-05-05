@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const validator = require("validator");
 const User = require("../models/User");
 
 const signToken = (id) =>
@@ -6,21 +7,38 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+const badRequest = (res, message) =>
+  res.status(400).json({ status: "fail", message });
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Name, email and password are required",
-      });
+    if (
+      typeof name !== "string" ||
+      typeof email !== "string" ||
+      typeof password !== "string"
+    ) {
+      return badRequest(res, "Name, email and password are required");
     }
 
+    const trimmedName = name.trim();
     const normalizedEmail = email.toLowerCase().trim();
 
+    if (!trimmedName || !normalizedEmail || !password) {
+      return badRequest(res, "Name, email and password are required");
+    }
+
+    if (!validator.isEmail(normalizedEmail)) {
+      return badRequest(res, "Please provide a valid email");
+    }
+
+    if (password.length < 6) {
+      return badRequest(res, "Password must be at least 6 characters");
+    }
+
     const newUser = await User.create({
-      name: name.trim(),
+      name: trimmedName,
       email: normalizedEmail,
       password,
     });
@@ -55,13 +73,19 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ status: "fail", message: "Email and password are required" });
+    if (typeof email !== "string" || typeof password !== "string") {
+      return badRequest(res, "Email and password are required");
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+
+    if (!normalizedEmail || !password) {
+      return badRequest(res, "Email and password are required");
+    }
+
+    if (!validator.isEmail(normalizedEmail)) {
+      return badRequest(res, "Please provide a valid email");
+    }
 
     const user = await User.findOne({ email: normalizedEmail }).select(
       "+password",

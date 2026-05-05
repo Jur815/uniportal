@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AuthContext } from "./AuthContext";
-import { getMe } from "../../../api/auth.api";
+import { getMe, loginUser } from "../../../api/auth.api";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -32,15 +32,19 @@ export function AuthProvider({ children }) {
     bootstrapAuth();
   }, []);
 
-  const login = (payload) => {
+  const login = async (email, password) => {
+    const payload = await loginUser({ email, password });
     const token = payload?.token;
     const loggedInUser = payload?.data?.user || payload?.user || null;
 
-    if (token) {
-      localStorage.setItem("token", token);
+    if (!token || !loggedInUser) {
+      throw new Error("Invalid login response");
     }
 
-    setUser(loggedInUser || null);
+    localStorage.setItem("token", token);
+
+    setUser(loggedInUser);
+    return loggedInUser;
   };
 
   const logout = () => {

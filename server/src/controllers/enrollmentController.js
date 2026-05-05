@@ -4,29 +4,37 @@ const Course = require("../models/Course");
 
 const MAX_CREDITS = 24;
 const ALLOWED_STATUSES = ["pending", "approved", "rejected"];
+const ACADEMIC_YEAR_PATTERN = /^\d{4}\/\d{4}$/;
+
+const badRequest = (res, message) =>
+  res.status(400).json({ status: "fail", message });
 
 exports.enroll = async (req, res) => {
   const { academicYear, semester, courses } = req.body;
 
   if (
-    !academicYear ||
-    !semester ||
+    typeof academicYear !== "string" ||
+    semester === undefined ||
     !Array.isArray(courses) ||
     courses.length === 0
   ) {
-    return res.status(400).json({
-      status: "fail",
-      message: "academicYear, semester, and courses[] are required",
-    });
+    return badRequest(res, "academicYear, semester, and courses[] are required");
+  }
+
+  const normalizedAcademicYear = academicYear.trim();
+
+  if (!ACADEMIC_YEAR_PATTERN.test(normalizedAcademicYear)) {
+    return badRequest(res, "academicYear must use YYYY/YYYY format");
   }
 
   const sem = Number(semester);
 
   if (![1, 2].includes(sem)) {
-    return res.status(400).json({
-      status: "fail",
-      message: "semester must be 1 or 2",
-    });
+    return badRequest(res, "semester must be 1 or 2");
+  }
+
+  if (!courses.every((id) => typeof id === "string")) {
+    return badRequest(res, "courses[] must contain course IDs");
   }
 
   const invalidIds = courses.filter(
@@ -59,7 +67,7 @@ exports.enroll = async (req, res) => {
 
   const existingEnrollment = await Enrollment.findOne({
     student: req.user._id,
-    academicYear,
+    academicYear: normalizedAcademicYear,
     semester: sem,
   });
 
@@ -76,14 +84,27 @@ exports.enroll = async (req, res) => {
       });
     }
 
-    const enrollment = await Enrollment.create({
-      student: req.user._id,
-      academicYear,
-      semester: sem,
-      courses: normalizedCourseIds,
-      totalCredits,
-      status: "pending",
-    });
+    let enrollment;
+
+    try {
+      enrollment = await Enrollment.create({
+        student: req.user._id,
+        academicYear: normalizedAcademicYear,
+        semester: sem,
+        courses: normalizedCourseIds,
+        totalCredits,
+        status: "pending",
+      });
+    } catch (err) {
+      if (err.code === 11000) {
+        return badRequest(
+          res,
+          "Enrollment already exists for this academic year and semester.",
+        );
+      }
+
+      throw err;
+    }
 
     const populated = await Enrollment.findById(enrollment._id)
       .populate("courses", "title code creditHours semester level")
@@ -277,11 +298,12 @@ exports.updateEnrollmentStatus = async (req, res) => {
     });
   }
 
-  if (!ALLOWED_STATUSES.includes(status) || status === "pending") {
-    return res.status(400).json({
-      status: "fail",
-      message: 'status must be either "approved" or "rejected"',
-    });
+  if (
+    typeof status !== "string" ||
+    !ALLOWED_STATUSES.includes(status) ||
+    status === "pending"
+  ) {
+    return badRequest(res, 'status must be either "approved" or "rejected"');
   }
 
   const enrollment = await Enrollment.findById(id);

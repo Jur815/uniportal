@@ -8,7 +8,7 @@ const studentProfileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    studentId: { type: String, required: true, unique: true, trim: true },
+    studentId: { type: String, unique: true, sparse: true, trim: true },
     faculty: { type: String, trim: true },
     department: { type: String, trim: true },
     program: { type: String, trim: true },
