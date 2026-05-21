@@ -8,7 +8,10 @@ const userRoutes = require("./routes/userRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const studentProfileRoutes = require("./routes/studentProfileRoutes");
+const facultyRoutes = require("./routes/facultyRoutes");
+const departmentRoutes = require("./routes/departmentRoutes");
 const errorHandler = require("./middlewares/errorHandler");
+
 
 const app = express();
 
@@ -59,6 +62,8 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/enrollments", enrollmentRoutes);
 app.use("/api/v1/student-profile", studentProfileRoutes);
+app.use("/api/v1/faculties", facultyRoutes);
+app.use("/api/v1/departments", departmentRoutes);
 
 app.use(errorHandler);
 
