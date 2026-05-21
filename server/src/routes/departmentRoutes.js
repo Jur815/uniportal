@@ -1,6 +1,6 @@
 const express = require("express");
 const departmentController = require("../controllers/departmentController");
-const { protect, restrictTo } = require("../controllers/authController");
+const { protect, restrictTo } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
