@@ -21,9 +21,21 @@ export const getAllEnrollments = async (params = {}) => {
   return response.data;
 };
 
-export const updateEnrollmentStatus = async ({ enrollmentId, status }) => {
+export const getEnrollmentDetail = async (enrollmentId) => {
+  const response = await http.get(`/enrollments/${enrollmentId}`);
+  return response.data;
+};
+
+export const updateEnrollmentStatus = async ({
+  enrollmentId,
+  status,
+  rejectionReason,
+  decisionReasonType,
+}) => {
   const response = await http.patch(`/enrollments/${enrollmentId}/status`, {
     status,
+    rejectionReason,
+    decisionReasonType,
   });
   return response.data;
 };

@@ -8,6 +8,8 @@ import PageHeader from "../../../components/ui/PageHeader";
 const defaultSummary = {
   totalCourses: 0,
   totalCredits: 0,
+  officialCourses: 0,
+  officialCredits: 0,
 };
 
 export default function MyCoursesPage() {
@@ -63,13 +65,15 @@ export default function MyCoursesPage() {
   return (
     <div>
       <PageHeader
-        title="My Courses"
-        subtitle="View all courses you are currently enrolled in."
+        title="My Enrollments"
+        subtitle="Track pending, approved, and rejected course enrollment requests."
       />
 
       <div style={{ marginBottom: "1rem" }}>
-        <strong>Total Courses:</strong> {summary.totalCourses} |{" "}
-        <strong>Total Credits:</strong> {summary.totalCredits}
+        <strong>Requests:</strong> {summary.totalCourses} |{" "}
+        <strong>Requested Credits:</strong> {summary.totalCredits} |{" "}
+        <strong>Official Courses:</strong> {summary.officialCourses} |{" "}
+        <strong>Official Credits:</strong> {summary.officialCredits}
       </div>
 
       {courses.length === 0 ? (

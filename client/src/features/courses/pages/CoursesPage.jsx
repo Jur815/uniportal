@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
+import { getActiveAcademicSession } from "../../../api/academicSessions.api";
 import { getAllCourses } from "../../../api/courses.api";
 import { enrollInCourse, getMyCourses } from "../../../api/enrollments.api";
 import { useAuth } from "../../auth/context/useAuth";
@@ -8,26 +9,29 @@ import Loader from "../../../components/ui/Loader";
 import EmptyState from "../../../components/ui/EmptyState";
 import PageHeader from "../../../components/ui/PageHeader";
 
-const CURRENT_ACADEMIC_YEAR = "2025/2026";
-
 export default function CoursesPage() {
   const { user } = useAuth();
 
   const [courses, setCourses] = useState([]);
   const [enrolledIds, setEnrolledIds] = useState([]);
+  const [activeSession, setActiveSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [error, setError] = useState("");
 
-  const fetchCourses = useCallback(async () => {
-    const data = await getAllCourses();
+  const fetchCourses = useCallback(async (session) => {
+    const params = session?.semester ? { semester: session.semester } : {};
+    const data = await getAllCourses(params);
     return data?.data?.courses || [];
   }, []);
 
-  const fetchMyCourseIds = useCallback(async () => {
+  const fetchMyCourseIds = useCallback(async (session) => {
     if (user?.role !== "student") return [];
 
-    const data = await getMyCourses({ academicYear: CURRENT_ACADEMIC_YEAR });
+    const params = session?.academicYear
+      ? { academicYear: session.academicYear, semester: session.semester }
+      : {};
+    const data = await getMyCourses(params);
     const myCourses = data?.data?.courses || [];
     return myCourses.map((course) => course._id);
   }, [user?.role]);
@@ -38,13 +42,16 @@ export default function CoursesPage() {
         setLoading(true);
         setError("");
 
+        const sessionData = await getActiveAcademicSession();
+        const session = sessionData?.data?.session || null;
         const [allCourses, myCourseIds] = await Promise.all([
-          fetchCourses(),
-          fetchMyCourseIds(),
+          fetchCourses(session),
+          fetchMyCourseIds(session),
         ]);
 
         setCourses(allCourses);
         setEnrolledIds(myCourseIds);
+        setActiveSession(session);
       } catch (err) {
         console.error("Failed to load courses page:", err);
         setError(err?.response?.data?.message || "Failed to load courses");
@@ -64,15 +71,20 @@ export default function CoursesPage() {
       }
 
       if (enrolledIds.includes(course._id)) {
-        toast.error("You are already enrolled in this course");
+        toast.error("You already have an enrollment request for this course");
+        return;
+      }
+
+      if (!activeSession?.registrationOpen) {
+        toast.error("Registration is not open for the active academic session");
         return;
       }
 
       setActionLoadingId(course._id);
 
       await enrollInCourse({
-        academicYear: CURRENT_ACADEMIC_YEAR,
-        semester: Number(course.semester),
+        academicYear: activeSession.academicYear,
+        semester: Number(activeSession.semester),
         courseId: course._id,
       });
 
@@ -80,7 +92,7 @@ export default function CoursesPage() {
         prev.includes(course._id) ? prev : [...prev, course._id],
       );
 
-      toast.success("Enrolled successfully");
+      toast.success("Enrollment request submitted");
     } catch (err) {
       console.error("Enrollment failed:", err);
       toast.error(err?.response?.data?.message || "Enrollment failed");
@@ -96,8 +108,21 @@ export default function CoursesPage() {
     <div>
       <PageHeader
         title="Courses"
-        subtitle="Browse all available courses and enroll by semester."
+        subtitle={
+          activeSession
+            ? `${activeSession.academicYear} / Semester ${activeSession.semester} registration ${
+                activeSession.registrationOpen ? "open" : "closed"
+              }.`
+            : "No active academic session has been configured."
+        }
       />
+
+      {!activeSession?.registrationOpen && (
+        <p className="error-text">
+          Registration is closed. You can browse courses, but enrollment requests
+          are disabled.
+        </p>
+      )}
 
       {courses.length === 0 ? (
         <EmptyState title="No courses found." />
@@ -111,6 +136,7 @@ export default function CoursesPage() {
               onEnroll={handleEnroll}
               loading={actionLoadingId === course._id}
               isEnrolled={enrolledIds.includes(course._id)}
+              enrollmentDisabled={!activeSession?.registrationOpen}
             />
           ))}
         </div>

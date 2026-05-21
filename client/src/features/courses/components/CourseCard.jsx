@@ -8,6 +8,7 @@ export default function CourseCard({
   onEnroll,
   loading = false,
   isEnrolled = false,
+  enrollmentDisabled = false,
   showEnrollmentMeta = false,
 }) {
   const facultyName = course.facultyRef?.name;
@@ -15,7 +16,12 @@ export default function CourseCard({
   const programName = course.programRef?.name || course.program;
 
   const handleEnroll = () => {
-    if (!loading && !isEnrolled && typeof onEnroll === "function") {
+    if (
+      !loading &&
+      !isEnrolled &&
+      !enrollmentDisabled &&
+      typeof onEnroll === "function"
+    ) {
       onEnroll(course);
     }
   };
@@ -66,12 +72,29 @@ export default function CourseCard({
           <p>
             <strong>Status:</strong> {course.enrollmentStatus || "N/A"}
           </p>
+          {course.rejectionReason && (
+            <p>
+              <strong>Action Needed:</strong>{" "}
+              {course.decisionReasonType
+                ? `${course.decisionReasonType}: ${course.rejectionReason}`
+                : course.rejectionReason}
+            </p>
+          )}
         </>
       )}
 
       {showEnroll && typeof onEnroll === "function" && (
-        <Button onClick={handleEnroll} disabled={loading || isEnrolled}>
-          {isEnrolled ? "Enrolled ✅" : loading ? "Enrolling..." : "Enroll"}
+        <Button
+          onClick={handleEnroll}
+          disabled={loading || isEnrolled || enrollmentDisabled}
+        >
+          {isEnrolled
+            ? "Request Submitted"
+            : loading
+              ? "Submitting..."
+              : enrollmentDisabled
+                ? "Registration Closed"
+                : "Request Enrollment"}
         </Button>
       )}
     </Card>

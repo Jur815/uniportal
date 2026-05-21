@@ -21,12 +21,12 @@ export default function Sidebar() {
           Dashboard
         </NavLink>
 
-        <NavLink to="/courses" className={getNavLinkClass}>
-          Courses
-        </NavLink>
-
         {user.role === "student" && (
           <>
+            <NavLink to="/courses" className={getNavLinkClass}>
+              Courses
+            </NavLink>
+
             <NavLink to="/my-courses" className={getNavLinkClass}>
               My Courses
             </NavLink>
@@ -42,11 +42,28 @@ export default function Sidebar() {
             <NavLink to="/admin/academic-setup" className={getNavLinkClass}>
               Academic Setup
             </NavLink>
+            <NavLink to="/admin/academic-sessions" className={getNavLinkClass}>
+              Academic Sessions
+            </NavLink>
+            <NavLink to="/admin/courses" className={getNavLinkClass}>
+              Manage Courses
+            </NavLink>
+            <NavLink to="/admin/students" className={getNavLinkClass}>
+              Students
+            </NavLink>
             <NavLink to="/admin/enrollments" className={getNavLinkClass}>
               Enrollments
             </NavLink>
             <NavLink to="/admin/courses/new" className={getNavLinkClass}>
               Create Course
+            </NavLink>
+          </>
+        )}
+
+        {user.role === "registrar" && (
+          <>
+            <NavLink to="/admin/enrollments" className={getNavLinkClass}>
+              Enrollments
             </NavLink>
           </>
         )}

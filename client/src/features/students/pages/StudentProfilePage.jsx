@@ -20,6 +20,7 @@ export default function StudentProfilePage() {
   const [formData, setFormData] = useState(initialProfile);
   const [profileLoading, setProfileLoading] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [academicVerified, setAcademicVerified] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
@@ -47,6 +48,7 @@ export default function StudentProfilePage() {
           level: String(profile?.level || 1),
           phone: profile?.phone || "",
         });
+        setAcademicVerified(Boolean(profile?.academicVerified));
       } catch (err) {
         if (!isMounted) return;
 
@@ -130,29 +132,39 @@ export default function StudentProfilePage() {
         </div>
 
         <form onSubmit={handleSubmit} className="form">
+          {academicVerified && (
+            <p className="success-text">
+              Academic fields have been verified by administration. Contact
+              administration to change them.
+            </p>
+          )}
           <input
             name="studentId"
             placeholder="Student ID / Matric number"
             value={formData.studentId}
             onChange={handleChange}
+            disabled={academicVerified}
           />
           <input
             name="faculty"
             placeholder="Faculty"
             value={formData.faculty}
             onChange={handleChange}
+            disabled={academicVerified}
           />
           <input
             name="department"
             placeholder="Department"
             value={formData.department}
             onChange={handleChange}
+            disabled={academicVerified}
           />
           <input
             name="program"
             placeholder="Program"
             value={formData.program}
             onChange={handleChange}
+            disabled={academicVerified}
           />
           <input
             name="level"
@@ -162,6 +174,7 @@ export default function StudentProfilePage() {
             placeholder="Level"
             value={formData.level}
             onChange={handleChange}
+            disabled={academicVerified}
           />
           <input
             name="phone"

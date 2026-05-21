@@ -1,9 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getAdminDashboardKpis } from "../../../api/admin.api";
 import { useAuth } from "../../auth/context/useAuth";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [kpis, setKpis] = useState(null);
+  const [kpiError, setKpiError] = useState("");
+  const isAdmin = user?.role === "admin";
+  const isRegistrar = user?.role === "registrar";
+  const isStudent = user?.role === "student";
+
+  useEffect(() => {
+    if (!isAdmin && !isRegistrar) return;
+
+    const loadKpis = async () => {
+      try {
+        const data = await getAdminDashboardKpis();
+        setKpis(data?.data?.kpis || null);
+      } catch (err) {
+        setKpiError(
+          err?.response?.data?.message || "Failed to load admin dashboard KPIs",
+        );
+      }
+    };
+
+    loadKpis();
+  }, [isAdmin, isRegistrar]);
 
   if (!user) {
     return (
@@ -12,9 +35,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  const isAdmin = user.role === "admin";
-  const isStudent = user.role === "student";
 
   return (
     <div className="p-6 space-y-6">
@@ -91,21 +111,71 @@ export default function DashboardPage() {
         </>
       )}
 
-      {isAdmin && (
+      {(isAdmin || isRegistrar) && (
         <>
+          {kpiError && <p className="error-text">{kpiError}</p>}
+
+          <div className="metric-grid">
+            <DashboardMetric label="Students" value={kpis?.totalStudents} />
+            <DashboardMetric label="Faculties" value={kpis?.totalFaculties} />
+            <DashboardMetric
+              label="Departments"
+              value={kpis?.totalDepartments}
+            />
+            <DashboardMetric label="Programs" value={kpis?.totalPrograms} />
+            <DashboardMetric label="Courses" value={kpis?.totalCourses} />
+            <DashboardMetric
+              label="Pending Enrollments"
+              value={kpis?.pendingEnrollments}
+            />
+            <DashboardMetric
+              label="Approved Enrollments"
+              value={kpis?.approvedEnrollments}
+            />
+            <DashboardMetric
+              label="Active Session"
+              value={
+                kpis?.activeAcademicSession
+                  ? `${kpis.activeAcademicSession.academicYear} S${kpis.activeAcademicSession.semester}`
+                  : "None"
+              }
+            />
+          </div>
+
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-white shadow rounded-xl p-5 border">
-              <h2 className="text-lg font-semibold text-gray-800">Courses</h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Manage all university courses and academic offerings.
-              </p>
-              <Link
-                to="/admin/academic-setup"
-                className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-              >
-                Academic Setup
-              </Link>
-            </div>
+            {isAdmin && (
+              <div className="bg-white shadow rounded-xl p-5 border">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Academic Setup
+                </h2>
+                <p className="text-sm text-gray-600 mt-2">
+                  Manage faculties, departments, programs, and course structure.
+                </p>
+                <Link
+                  to="/admin/academic-setup"
+                  className="inline-block mt-4 text-blue-600 font-medium hover:underline"
+                >
+                  Academic Setup
+                </Link>
+              </div>
+            )}
+
+            {isAdmin && (
+              <div className="bg-white shadow rounded-xl p-5 border">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Student Management
+                </h2>
+                <p className="text-sm text-gray-600 mt-2">
+                  Review student profiles and manage account status.
+                </p>
+                <Link
+                  to="/admin/students"
+                  className="inline-block mt-4 text-blue-600 font-medium hover:underline"
+                >
+                  View Students
+                </Link>
+              </div>
+            )}
 
             <div className="bg-white shadow rounded-xl p-5 border">
               <h2 className="text-lg font-semibold text-gray-800">
@@ -122,20 +192,22 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="bg-white shadow rounded-xl p-5 border">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Admin Tools
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Perform academic and administrative management tasks.
-              </p>
-              <Link
-                to="/admin/courses/new"
-                className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-              >
-                Create Course
-              </Link>
-            </div>
+            {isAdmin && (
+              <div className="bg-white shadow rounded-xl p-5 border">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Academic Sessions
+                </h2>
+                <p className="text-sm text-gray-600 mt-2">
+                  Open and close registration windows.
+                </p>
+                <Link
+                  to="/admin/academic-sessions"
+                  className="inline-block mt-4 text-blue-600 font-medium hover:underline"
+                >
+                  Manage Sessions
+                </Link>
+              </div>
+            )}
           </div>
 
           <div className="bg-green-50 border border-green-200 rounded-xl p-5">
@@ -149,6 +221,15 @@ export default function DashboardPage() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function DashboardMetric({ label, value }) {
+  return (
+    <div className="metric-card">
+      <span>{label}</span>
+      <strong>{value ?? "..."}</strong>
     </div>
   );
 }

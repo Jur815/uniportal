@@ -10,6 +10,7 @@ router.get("/me", protect, (req, res) => {
         name: req.user.name,
         email: req.user.email,
         role: req.user.role,
+        status: req.user.status,
       },
     },
   });

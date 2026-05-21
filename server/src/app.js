@@ -11,6 +11,9 @@ const studentProfileRoutes = require("./routes/studentProfileRoutes");
 const facultyRoutes = require("./routes/facultyRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const programRoutes = require("./routes/programRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const academicSessionRoutes = require("./routes/academicSessionRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 
 
@@ -79,6 +82,9 @@ app.use("/api/v1/student-profile", studentProfileRoutes);
 app.use("/api/v1/faculties", facultyRoutes);
 app.use("/api/v1/departments", departmentRoutes);
 app.use("/api/v1/programs", programRoutes);
+app.use("/api/v1/students", studentRoutes);
+app.use("/api/v1/academic-sessions", academicSessionRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 app.use(errorHandler);
 

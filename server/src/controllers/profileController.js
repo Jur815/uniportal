@@ -12,6 +12,13 @@ const allowedProfileFields = [
 const textProfileFields = allowedProfileFields.filter(
   (field) => field !== "level",
 );
+const protectedAcademicFields = [
+  "studentId",
+  "faculty",
+  "department",
+  "program",
+  "level",
+];
 
 const badRequest = (res, message) =>
   res.status(400).json({ status: "fail", message });
@@ -93,6 +100,21 @@ exports.updateMyProfile = async (req, res) => {
       ...payload,
     });
   } else {
+    if (profile.academicVerified) {
+      const attemptedProtectedUpdate = protectedAcademicFields.some(
+        (field) =>
+          Object.prototype.hasOwnProperty.call(payload, field) &&
+          String(payload[field] ?? "") !== String(profile[field] ?? ""),
+      );
+
+      if (attemptedProtectedUpdate) {
+        return badRequest(
+          res,
+          "Academic fields are verified and can only be changed by administration",
+        );
+      }
+    }
+
     profile = await StudentProfile.findOneAndUpdate(
       { user: req.user._id },
       payload,

@@ -14,8 +14,12 @@ const studentProfileSchema = new mongoose.Schema(
     program: { type: String, trim: true },
     level: { type: Number, default: 1, min: 1, max: 6 },
     phone: { type: String, trim: true },
+    academicVerified: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
+
+studentProfileSchema.index({ studentId: 1 });
+studentProfileSchema.index({ faculty: 1, department: 1, program: 1 });
 
 module.exports = mongoose.model("StudentProfile", studentProfileSchema);

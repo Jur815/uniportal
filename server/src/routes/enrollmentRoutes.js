@@ -12,7 +12,12 @@ router.post("/", restrictTo("student"), ctrl.enroll);
 router.get("/my", restrictTo("student"), ctrl.getMyCourses);
 
 // 🛠️ Admin routes
-router.get("/", restrictTo("admin"), ctrl.getAllEnrollments);
-router.patch("/:id/status", restrictTo("admin"), ctrl.updateEnrollmentStatus);
+router.get("/", restrictTo("admin", "registrar"), ctrl.getAllEnrollments);
+router.get("/:id", restrictTo("admin", "registrar"), ctrl.getEnrollment);
+router.patch(
+  "/:id/status",
+  restrictTo("admin", "registrar"),
+  ctrl.updateEnrollmentStatus,
+);
 
 module.exports = router;

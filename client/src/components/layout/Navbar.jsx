@@ -34,8 +34,16 @@ export default function Navbar() {
             {user.role === "admin" && (
               <>
                 <Link to="/admin/academic-setup">Academic Setup</Link>
-                <Link to="/courses">Courses</Link>
+                <Link to="/admin/academic-sessions">Sessions</Link>
+                <Link to="/admin/courses">Manage Courses</Link>
+                <Link to="/admin/students">Students</Link>
                 <Link to="/admin/courses/new">Create Course</Link>
+                <Link to="/admin/enrollments">Enrollments</Link>
+              </>
+            )}
+
+            {user.role === "registrar" && (
+              <>
                 <Link to="/admin/enrollments">Enrollments</Link>
               </>
             )}

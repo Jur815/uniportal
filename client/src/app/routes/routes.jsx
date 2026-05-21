@@ -7,7 +7,12 @@ import MyCoursesPage from "../../features/courses/pages/MyCoursesPage";
 import CreateCoursePage from "../../features/courses/pages/CreateCoursePage";
 import StudentProfilePage from "../../features/students/pages/StudentProfilePage";
 import AdminEnrollmentsPage from "../../features/enrollments/pages/AdminEnrollmentsPage";
+import EnrollmentDetailPage from "../../features/enrollments/pages/EnrollmentDetailPage";
 import AcademicSetupPage from "../../features/admin/pages/AcademicSetupPage";
+import AdminCourseManagementPage from "../../features/admin/pages/AdminCourseManagementPage";
+import AdminCourseDetailPage from "../../features/admin/pages/AdminCourseDetailPage";
+import AdminStudentsPage from "../../features/admin/pages/AdminStudentsPage";
+import AcademicSessionsPage from "../../features/admin/pages/AcademicSessionsPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -61,15 +66,40 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={["admin"]} />,
+            element: <ProtectedRoute allowedRoles={["admin", "registrar"]} />,
             children: [
               {
                 path: "admin/enrollments",
                 element: <AdminEnrollmentsPage />,
               },
               {
+                path: "admin/enrollments/:enrollmentId",
+                element: <EnrollmentDetailPage />,
+              },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={["admin"]} />,
+            children: [
+              {
+                path: "admin/students",
+                element: <AdminStudentsPage />,
+              },
+              {
+                path: "admin/academic-sessions",
+                element: <AcademicSessionsPage />,
+              },
+              {
                 path: "admin/academic-setup",
                 element: <AcademicSetupPage />,
+              },
+              {
+                path: "admin/courses",
+                element: <AdminCourseManagementPage />,
+              },
+              {
+                path: "admin/courses/:courseId",
+                element: <AdminCourseDetailPage />,
               },
               {
                 path: "admin/courses/new",

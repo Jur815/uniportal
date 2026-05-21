@@ -54,6 +54,7 @@ exports.register = async (req, res) => {
           name: newUser.name,
           email: newUser.email,
           role: newUser.role,
+          status: newUser.status,
         },
       },
     });
@@ -97,6 +98,13 @@ exports.login = async (req, res) => {
         .json({ status: "fail", message: "Incorrect email or password" });
     }
 
+    if (user.status === "suspended") {
+      return res.status(403).json({
+        status: "fail",
+        message: "This account has been suspended. Please contact administration.",
+      });
+    }
+
     const token = signToken(user._id);
 
     res.status(200).json({
@@ -108,6 +116,7 @@ exports.login = async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          status: user.status,
         },
       },
     });
