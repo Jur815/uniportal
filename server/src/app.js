@@ -30,7 +30,11 @@ const clientOrigins = [
   .map((origin) => normalizeOrigin(origin.trim()))
   .filter(Boolean);
 
-const allowedOrigins = ["http://localhost:5173", ...clientOrigins];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://uniportal-rho.vercel.app",
+  ...clientOrigins,
+];
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
