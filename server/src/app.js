@@ -18,9 +18,16 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(helmet());
 
-const clientOrigins = (process.env.CLIENT_URL || "")
+const normalizeOrigin = (origin) => origin.replace(/\/+$/, "");
+
+const clientOrigins = [
+  process.env.CLIENT_URL,
+  process.env.CORS_ORIGINS,
+]
+  .filter(Boolean)
+  .join(",")
   .split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => normalizeOrigin(origin.trim()))
   .filter(Boolean);
 
 const allowedOrigins = ["http://localhost:5173", ...clientOrigins];
@@ -39,7 +46,9 @@ const authLimiter = rateLimit({
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const normalizedOrigin = origin ? normalizeOrigin(origin) : origin;
+
+      if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin)) {
         return callback(null, true);
       }
       return callback(new Error(`CORS not allowed for origin: ${origin}`));

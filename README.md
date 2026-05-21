@@ -265,8 +265,14 @@ CLIENT_URL=https://your-vercel-app.vercel.app
 `<PASSWORD>`. If it contains `<PASSWORD>`, set `DATABASE_PASSWORD` separately.
 Do not commit real secret values.
 
-`CLIENT_URL` is used for CORS. Use the exact Vercel origin with no trailing
-slash. Multiple origins can be provided as a comma-separated list.
+`CLIENT_URL` is used for CORS. Use the exact Vercel origin, for example:
+
+```env
+CLIENT_URL=https://uniportal-rho.vercel.app
+```
+
+Multiple origins can be provided as a comma-separated list. `CORS_ORIGINS` is
+also supported for additional comma-separated frontend origins.
 
 ### Vercel Frontend
 
