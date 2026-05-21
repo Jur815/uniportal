@@ -147,11 +147,13 @@ a {
   gap: 12px;
 }
 
-.form input {
+.form input,
+.form select {
   padding: 12px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   box-sizing: border-box;
+  width: 100%;
 }
 
 .page-header {
@@ -205,6 +207,40 @@ a {
 
 .profile-summary p {
   margin: 0;
+}
+
+.setup-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.setup-section-header h2 {
+  margin: 0 0 6px;
+}
+
+.setup-section-header p {
+  color: #6b7280;
+  margin: 0 0 16px;
+}
+
+.setup-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.setup-list-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+
+.setup-list-item span {
+  color: #6b7280;
+  font-size: 13px;
 }
 
 @media (max-width: 760px) {

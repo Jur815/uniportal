@@ -7,6 +7,7 @@ import MyCoursesPage from "../../features/courses/pages/MyCoursesPage";
 import CreateCoursePage from "../../features/courses/pages/CreateCoursePage";
 import StudentProfilePage from "../../features/students/pages/StudentProfilePage";
 import AdminEnrollmentsPage from "../../features/enrollments/pages/AdminEnrollmentsPage";
+import AcademicSetupPage from "../../features/admin/pages/AcademicSetupPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -65,6 +66,10 @@ export const router = createBrowserRouter([
               {
                 path: "admin/enrollments",
                 element: <AdminEnrollmentsPage />,
+              },
+              {
+                path: "admin/academic-setup",
+                element: <AcademicSetupPage />,
               },
               {
                 path: "admin/courses/new",

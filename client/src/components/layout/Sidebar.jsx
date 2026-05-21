@@ -39,6 +39,9 @@ export default function Sidebar() {
 
         {user.role === "admin" && (
           <>
+            <NavLink to="/admin/academic-setup" className={getNavLinkClass}>
+              Academic Setup
+            </NavLink>
             <NavLink to="/admin/enrollments" className={getNavLinkClass}>
               Enrollments
             </NavLink>

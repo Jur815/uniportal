@@ -1,10 +1,13 @@
 const Department = require("../models/departmentModel");
+const Course = require("../models/Course");
+const Faculty = require("../models/facultyModel");
+const Program = require("../models/programModel");
 const mongoose = require("mongoose");
 
 const badRequest = (res, message) =>
   res.status(400).json({ status: "fail", message });
 
-const buildDepartmentPayload = (body) => {
+const buildDepartmentPayload = async (body) => {
   const { name, code, faculty, description } = body;
 
   if (typeof name !== "string" || !name.trim()) {
@@ -22,6 +25,12 @@ const buildDepartmentPayload = (body) => {
     return { error: "A valid faculty ID is required" };
   }
 
+  const facultyDoc = await Faculty.findById(faculty);
+
+  if (!facultyDoc) {
+    return { error: "Faculty not found" };
+  }
+
   const payload = {
     name: name.trim(),
     code: code.trim(),
@@ -37,7 +46,7 @@ const buildDepartmentPayload = (body) => {
 
 exports.createDepartment = async (req, res) => {
   try {
-    const { error, payload } = buildDepartmentPayload(req.body);
+    const { error, payload } = await buildDepartmentPayload(req.body);
 
     if (error) {
       return badRequest(res, error);
@@ -110,7 +119,7 @@ exports.getDepartment = async (req, res) => {
 
 exports.updateDepartment = async (req, res) => {
   try {
-    const { error, payload } = buildDepartmentPayload(req.body);
+    const { error, payload } = await buildDepartmentPayload(req.body);
 
     if (error) {
       return badRequest(res, error);
@@ -146,6 +155,18 @@ exports.updateDepartment = async (req, res) => {
 
 exports.deleteDepartment = async (req, res) => {
   try {
+    const [programCount, courseCount] = await Promise.all([
+      Program.countDocuments({ department: req.params.id }),
+      Course.countDocuments({ departmentRef: req.params.id }),
+    ]);
+
+    if (programCount > 0 || courseCount > 0) {
+      return badRequest(
+        res,
+        "Department cannot be deleted while programs or courses use it",
+      );
+    }
+
     const department = await Department.findByIdAndDelete(req.params.id);
 
     if (!department) {

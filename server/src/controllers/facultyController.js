@@ -1,4 +1,6 @@
 const Faculty = require("../models/facultyModel");
+const Course = require("../models/Course");
+const Department = require("../models/departmentModel");
 
 const badRequest = (res, message) =>
   res.status(400).json({ status: "fail", message });
@@ -122,6 +124,18 @@ exports.updateFaculty = async (req, res) => {
 
 exports.deleteFaculty = async (req, res) => {
   try {
+    const [departmentCount, courseCount] = await Promise.all([
+      Department.countDocuments({ faculty: req.params.id }),
+      Course.countDocuments({ facultyRef: req.params.id }),
+    ]);
+
+    if (departmentCount > 0 || courseCount > 0) {
+      return badRequest(
+        res,
+        "Faculty cannot be deleted while departments or courses use it",
+      );
+    }
+
     const faculty = await Faculty.findByIdAndDelete(req.params.id);
 
     if (!faculty) {

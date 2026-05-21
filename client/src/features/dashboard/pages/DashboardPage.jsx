@@ -100,10 +100,10 @@ export default function DashboardPage() {
                 Manage all university courses and academic offerings.
               </p>
               <Link
-                to="/courses"
+                to="/admin/academic-setup"
                 className="inline-block mt-4 text-blue-600 font-medium hover:underline"
               >
-                Manage Courses
+                Academic Setup
               </Link>
             </div>
 

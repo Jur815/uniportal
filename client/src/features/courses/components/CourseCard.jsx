@@ -10,6 +10,10 @@ export default function CourseCard({
   isEnrolled = false,
   showEnrollmentMeta = false,
 }) {
+  const facultyName = course.facultyRef?.name;
+  const departmentName = course.departmentRef?.name || course.department;
+  const programName = course.programRef?.name || course.program;
+
   const handleEnroll = () => {
     if (!loading && !isEnrolled && typeof onEnroll === "function") {
       onEnroll(course);
@@ -35,6 +39,24 @@ export default function CourseCard({
       <p>
         <strong>Level:</strong> {course.level}
       </p>
+
+      {facultyName && (
+        <p>
+          <strong>Faculty:</strong> {facultyName}
+        </p>
+      )}
+
+      {departmentName && (
+        <p>
+          <strong>Department:</strong> {departmentName}
+        </p>
+      )}
+
+      {programName && (
+        <p>
+          <strong>Program:</strong> {programName}
+        </p>
+      )}
 
       {showEnrollmentMeta && (
         <>

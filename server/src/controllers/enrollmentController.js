@@ -9,6 +9,17 @@ const ACADEMIC_YEAR_PATTERN = /^\d{4}\/\d{4}$/;
 const badRequest = (res, message) =>
   res.status(400).json({ status: "fail", message });
 
+const coursePopulate = {
+  path: "courses",
+  select:
+    "title code creditHours semester level department program facultyRef departmentRef programRef",
+  populate: [
+    { path: "facultyRef", select: "name code" },
+    { path: "departmentRef", select: "name code" },
+    { path: "programRef", select: "name code" },
+  ],
+};
+
 exports.enroll = async (req, res) => {
   const { academicYear, semester, courses } = req.body;
 
@@ -107,7 +118,7 @@ exports.enroll = async (req, res) => {
     }
 
     const populated = await Enrollment.findById(enrollment._id)
-      .populate("courses", "title code creditHours semester level")
+      .populate(coursePopulate)
       .populate("student", "name email");
 
     return res.status(201).json({
@@ -164,7 +175,7 @@ exports.enroll = async (req, res) => {
   await existingEnrollment.save();
 
   const populated = await Enrollment.findById(existingEnrollment._id)
-    .populate("courses", "title code creditHours semester level")
+    .populate(coursePopulate)
     .populate("student", "name email");
 
   return res.status(200).json({
@@ -191,7 +202,7 @@ exports.getMyCourses = async (req, res) => {
   }
 
   const enrollments = await Enrollment.find(filter)
-    .populate("courses", "title code creditHours semester level")
+    .populate(coursePopulate)
     .sort({ academicYear: -1, semester: -1, createdAt: -1 });
 
   const courses = enrollments.flatMap((e) =>
@@ -202,6 +213,11 @@ exports.getMyCourses = async (req, res) => {
       creditHours: c.creditHours,
       semester: c.semester,
       level: c.level,
+      facultyRef: c.facultyRef,
+      departmentRef: c.departmentRef,
+      programRef: c.programRef,
+      department: c.department,
+      program: c.program,
       academicYear: e.academicYear,
       enrollmentStatus: e.status,
       enrollmentId: e._id,
@@ -265,7 +281,7 @@ exports.getAllEnrollments = async (req, res) => {
 
   const enrollments = await Enrollment.find(filter)
     .populate("student", "name email role")
-    .populate("courses", "title code creditHours semester level")
+    .populate(coursePopulate)
     .sort({ createdAt: -1 });
 
   const summary = enrollments.reduce(
@@ -320,7 +336,7 @@ exports.updateEnrollmentStatus = async (req, res) => {
 
   const populated = await Enrollment.findById(enrollment._id)
     .populate("student", "name email role")
-    .populate("courses", "title code creditHours semester level");
+    .populate(coursePopulate);
 
   return res.status(200).json({
     status: "success",
