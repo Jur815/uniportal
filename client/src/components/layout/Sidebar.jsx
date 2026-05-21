@@ -42,6 +42,9 @@ export default function Sidebar() {
             <NavLink to="/admin/enrollments" className={getNavLinkClass}>
               Enrollments
             </NavLink>
+            <NavLink to="/admin/courses/new" className={getNavLinkClass}>
+              Create Course
+            </NavLink>
           </>
         )}
       </nav>

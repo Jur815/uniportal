@@ -1,8 +1,40 @@
 const Faculty = require("../models/facultyModel");
 
+const badRequest = (res, message) =>
+  res.status(400).json({ status: "fail", message });
+
+const buildFacultyPayload = (body) => {
+  const { name, code, description } = body;
+
+  if (typeof name !== "string" || !name.trim()) {
+    return { error: "Faculty name is required" };
+  }
+
+  if (typeof code !== "string" || !code.trim()) {
+    return { error: "Faculty code is required" };
+  }
+
+  const payload = {
+    name: name.trim(),
+    code: code.trim(),
+  };
+
+  if (typeof description === "string") {
+    payload.description = description.trim();
+  }
+
+  return { payload };
+};
+
 exports.createFaculty = async (req, res) => {
   try {
-    const faculty = await Faculty.create(req.body);
+    const { error, payload } = buildFacultyPayload(req.body);
+
+    if (error) {
+      return badRequest(res, error);
+    }
+
+    const faculty = await Faculty.create(payload);
 
     res.status(201).json({
       status: "success",
@@ -58,7 +90,13 @@ exports.getFaculty = async (req, res) => {
 
 exports.updateFaculty = async (req, res) => {
   try {
-    const faculty = await Faculty.findByIdAndUpdate(req.params.id, req.body, {
+    const { error, payload } = buildFacultyPayload(req.body);
+
+    if (error) {
+      return badRequest(res, error);
+    }
+
+    const faculty = await Faculty.findByIdAndUpdate(req.params.id, payload, {
       new: true,
       runValidators: true,
     });

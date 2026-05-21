@@ -4,12 +4,13 @@ import LoginPage from "../../features/auth/pages/LoginPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import CoursesPage from "../../features/courses/pages/CoursesPage";
 import MyCoursesPage from "../../features/courses/pages/MyCoursesPage";
+import CreateCoursePage from "../../features/courses/pages/CreateCoursePage";
 import StudentProfilePage from "../../features/students/pages/StudentProfilePage";
 import AdminEnrollmentsPage from "../../features/enrollments/pages/AdminEnrollmentsPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
-import Layout from "../../components/layout/Layout";
+import DashboardLayout from "../../components/layout/DashboardLayout";
 
 export const router = createBrowserRouter([
   {
@@ -26,7 +27,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Layout />,
+        element: <DashboardLayout />,
         children: [
           {
             index: true,
@@ -64,6 +65,10 @@ export const router = createBrowserRouter([
               {
                 path: "admin/enrollments",
                 element: <AdminEnrollmentsPage />,
+              },
+              {
+                path: "admin/courses/new",
+                element: <CreateCoursePage />,
               },
             ],
           },

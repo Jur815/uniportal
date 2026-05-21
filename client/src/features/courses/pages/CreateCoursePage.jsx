@@ -11,6 +11,8 @@ const initialState = {
   creditHours: "",
   semester: "",
   level: "",
+  department: "",
+  program: "",
 };
 
 export default function CreateCoursePage() {
@@ -34,12 +36,12 @@ export default function CreateCoursePage() {
       return "Credit hours must be greater than 0";
     }
     if (!formData.semester) return "Semester is required";
-    if (Number(formData.semester) <= 0) {
-      return "Semester must be greater than 0";
+    if (![1, 2].includes(Number(formData.semester))) {
+      return "Semester must be 1 or 2";
     }
     if (!formData.level) return "Level is required";
-    if (Number(formData.level) <= 0) {
-      return "Level must be greater than 0";
+    if (Number(formData.level) < 1 || Number(formData.level) > 6) {
+      return "Level must be between 1 and 6";
     }
     return "";
   };
@@ -114,6 +116,18 @@ export default function CreateCoursePage() {
             type="number"
             placeholder="Level"
             value={formData.level}
+            onChange={handleChange}
+          />
+          <input
+            name="department"
+            placeholder="Department"
+            value={formData.department}
+            onChange={handleChange}
+          />
+          <input
+            name="program"
+            placeholder="Program"
+            value={formData.program}
             onChange={handleChange}
           />
 

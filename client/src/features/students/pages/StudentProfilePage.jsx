@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../auth/context/useAuth";
 import { getMyProfile, updateMyProfile } from "../../../api/profile.api";
+import PageHeader from "../../../components/ui/PageHeader";
+import Card from "../../../components/ui/Card";
+import Button from "../../../components/ui/Button";
+
+const initialProfile = {
+  studentId: "",
+  faculty: "",
+  department: "",
+  program: "",
+  level: "1",
+  phone: "",
+};
 
 export default function StudentProfilePage() {
   const { user } = useAuth();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-  });
-
+  const [formData, setFormData] = useState(initialProfile);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
@@ -18,26 +27,35 @@ export default function StudentProfilePage() {
     let isMounted = true;
 
     const fetchProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        setProfileLoading(false);
+        return;
+      }
 
       try {
+        setProfileLoading(true);
         const response = await getMyProfile();
         const profile = response?.data?.profile;
 
         if (!isMounted) return;
 
         setFormData({
-          name: profile?.name || user.name || "",
-          email: profile?.email || user.email || "",
+          studentId: profile?.studentId || "",
+          faculty: profile?.faculty || "",
+          department: profile?.department || "",
+          program: profile?.program || "",
+          level: String(profile?.level || 1),
+          phone: profile?.phone || "",
         });
       } catch (err) {
         if (!isMounted) return;
 
-        setFormData({
-          name: user.name || "",
-          email: user.email || "",
-        });
+        setFormData(initialProfile);
         setError(err?.response?.data?.message || "Failed to load profile");
+      } finally {
+        if (isMounted) {
+          setProfileLoading(false);
+        }
       }
     };
 
@@ -63,7 +81,10 @@ export default function StudentProfilePage() {
       setError("");
       setSuccess("");
 
-      await updateMyProfile(formData);
+      await updateMyProfile({
+        ...formData,
+        level: Number(formData.level),
+      });
       setSuccess("Profile updated successfully");
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to update profile");
@@ -76,72 +97,84 @@ export default function StudentProfilePage() {
     return <div className="p-6">Loading user...</div>;
   }
 
+  if (profileLoading) {
+    return <div className="loader">Loading profile...</div>;
+  }
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">My Profile</h1>
+    <div>
+      <PageHeader
+        title="My Profile"
+        subtitle="Keep your academic profile ready for course registration."
+      />
 
-      {/* STATUS */}
       {success && (
-        <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
+        <p className="success-text" role="status">
           {success}
-        </div>
+        </p>
       )}
 
-      {error && (
-        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>
-      )}
+      {error && <p className="error-text">{error}</p>}
 
-      {/* FORM */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow rounded p-6 space-y-4"
-      >
-        {/* NAME */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Full Name</label>
+      <Card>
+        <div className="profile-summary">
+          <p>
+            <strong>Name:</strong> {user.name}
+          </p>
+          <p>
+            <strong>Email:</strong> {user.email}
+          </p>
+          <p>
+            <strong>Role:</strong> {user.role}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="form">
           <input
-            type="text"
-            name="name"
-            value={formData.name}
+            name="studentId"
+            placeholder="Student ID / Matric number"
+            value={formData.studentId}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-            required
           />
-        </div>
-
-        {/* EMAIL */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
           <input
-            type="email"
-            name="email"
-            value={formData.email}
+            name="faculty"
+            placeholder="Faculty"
+            value={formData.faculty}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-            required
           />
-        </div>
-
-        {/* ROLE (READ ONLY) */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Role</label>
           <input
-            type="text"
-            value={user.role}
-            disabled
-            className="w-full border rounded px-3 py-2 bg-gray-100"
+            name="department"
+            placeholder="Department"
+            value={formData.department}
+            onChange={handleChange}
           />
-        </div>
+          <input
+            name="program"
+            placeholder="Program"
+            value={formData.program}
+            onChange={handleChange}
+          />
+          <input
+            name="level"
+            type="number"
+            min="1"
+            max="6"
+            placeholder="Level"
+            value={formData.level}
+            onChange={handleChange}
+          />
+          <input
+            name="phone"
+            placeholder="Phone"
+            value={formData.phone}
+            onChange={handleChange}
+          />
 
-        {/* BUTTON */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-        >
-          {loading ? "Updating..." : "Update Profile"}
-        </button>
-      </form>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Updating..." : "Update Profile"}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

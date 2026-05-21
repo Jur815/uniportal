@@ -130,10 +130,10 @@ export default function DashboardPage() {
                 Perform academic and administrative management tasks.
               </p>
               <Link
-                to="/courses"
+                to="/admin/courses/new"
                 className="inline-block mt-4 text-blue-600 font-medium hover:underline"
               >
-                Open Admin Area
+                Create Course
               </Link>
             </div>
           </div>
