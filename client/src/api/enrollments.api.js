@@ -15,6 +15,11 @@ export const getMyCourses = async (params = {}) => {
   return response.data;
 };
 
+export const getMyEnrollmentDetail = async (enrollmentId) => {
+  const response = await http.get(`/enrollments/my/${enrollmentId}`);
+  return response.data;
+};
+
 // Admin
 export const getAllEnrollments = async (params = {}) => {
   const response = await http.get("/enrollments", { params });

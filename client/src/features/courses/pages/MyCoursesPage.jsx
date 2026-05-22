@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getMyCourses } from "../../../api/enrollments.api";
 import CourseCard from "../components/CourseCard";
 import Loader from "../../../components/ui/Loader";
@@ -74,6 +75,12 @@ export default function MyCoursesPage() {
         <strong>Requested Credits:</strong> {summary.totalCredits} |{" "}
         <strong>Official Courses:</strong> {summary.officialCourses} |{" "}
         <strong>Official Credits:</strong> {summary.officialCredits}
+      </div>
+
+      <div className="course-detail-actions">
+        <Link className="btn btn-outline" to="/my-enrollments">
+          View Enrollment Slips
+        </Link>
       </div>
 
       {courses.length === 0 ? (

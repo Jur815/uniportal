@@ -12,6 +12,7 @@ const departmentSchema = new mongoose.Schema(
       required: [true, "Department code is required"],
       trim: true,
       uppercase: true,
+      unique: true,
     },
     faculty: {
       type: mongoose.Schema.Types.ObjectId,
@@ -22,12 +23,15 @@ const departmentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true },
 );
 
 departmentSchema.index({ name: 1, faculty: 1 }, { unique: true });
-departmentSchema.index({ code: 1, faculty: 1 }, { unique: true });
 
 const Department = mongoose.model("Department", departmentSchema);
 

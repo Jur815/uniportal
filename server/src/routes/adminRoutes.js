@@ -8,5 +8,6 @@ router.use(protect);
 router.use(restrictTo("admin", "registrar"));
 
 router.get("/dashboard", ctrl.getAdminKpis);
+router.get("/registrar-dashboard", ctrl.getRegistrarDashboard);
 
 module.exports = router;

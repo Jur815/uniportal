@@ -10,6 +10,7 @@ router.use(protect);
 // 🎓 Student routes
 router.post("/", restrictTo("student"), ctrl.enroll);
 router.get("/my", restrictTo("student"), ctrl.getMyCourses);
+router.get("/my/:id", restrictTo("student"), ctrl.getMyEnrollment);
 
 // 🛠️ Admin routes
 router.get("/", restrictTo("admin", "registrar"), ctrl.getAllEnrollments);

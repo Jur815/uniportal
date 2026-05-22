@@ -31,6 +31,14 @@ export default function Sidebar() {
               My Courses
             </NavLink>
 
+            <NavLink to="/my-enrollments" className={getNavLinkClass}>
+              Enrollment Slips
+            </NavLink>
+
+            <NavLink to="/my-academic-records" className={getNavLinkClass}>
+              Academic Records
+            </NavLink>
+
             <NavLink to="/profile" className={getNavLinkClass}>
               Profile
             </NavLink>
@@ -39,8 +47,17 @@ export default function Sidebar() {
 
         {user.role === "admin" && (
           <>
+            <NavLink to="/registrar/dashboard" className={getNavLinkClass}>
+              Registrar Dashboard
+            </NavLink>
             <NavLink to="/admin/academic-setup" className={getNavLinkClass}>
               Academic Setup
+            </NavLink>
+            <NavLink to="/admin/faculties" className={getNavLinkClass}>
+              Faculties
+            </NavLink>
+            <NavLink to="/admin/departments" className={getNavLinkClass}>
+              Departments
             </NavLink>
             <NavLink to="/admin/academic-sessions" className={getNavLinkClass}>
               Academic Sessions
@@ -50,6 +67,12 @@ export default function Sidebar() {
             </NavLink>
             <NavLink to="/admin/students" className={getNavLinkClass}>
               Students
+            </NavLink>
+            <NavLink to="/admin/academic-records" className={getNavLinkClass}>
+              Academic Records
+            </NavLink>
+            <NavLink to="/admin/demo-readiness" className={getNavLinkClass}>
+              Demo Readiness
             </NavLink>
             <NavLink to="/admin/enrollments" className={getNavLinkClass}>
               Enrollments
@@ -62,8 +85,14 @@ export default function Sidebar() {
 
         {user.role === "registrar" && (
           <>
+            <NavLink to="/registrar/dashboard" className={getNavLinkClass}>
+              Registrar Dashboard
+            </NavLink>
             <NavLink to="/admin/enrollments" className={getNavLinkClass}>
               Enrollments
+            </NavLink>
+            <NavLink to="/admin/academic-records" className={getNavLinkClass}>
+              Academic Records
             </NavLink>
           </>
         )}

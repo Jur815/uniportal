@@ -235,11 +235,14 @@ function EnrollmentReviewCard({
       <div className="review-grid">
         <InfoPanel title="Student Information">
           <Info label="Student ID" value={profile.studentId} />
+          <Info label="Registration No" value={profile.registrationNumber} />
           <Info label="Email" value={student.email} />
           <Info label="Faculty" value={profile.faculty} />
           <Info label="Department" value={profile.department} />
           <Info label="Program" value={profile.program} />
           <Info label="Level" value={profile.level} />
+          <Info label="Year of Study" value={profile.yearOfStudy} />
+          <Info label="Intake Year" value={profile.intakeYear} />
           <Info label="Account" value={student.status || "active"} />
           <Info
             label="Academic Verified"

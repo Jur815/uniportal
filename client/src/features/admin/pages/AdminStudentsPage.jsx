@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getDepartments, getFaculties, getPrograms } from "../../../api/academic.api";
 import {
@@ -199,7 +200,7 @@ export default function AdminStudentsPage() {
         <form className="course-filter-bar" onSubmit={applyFilters}>
           <input
             name="search"
-            placeholder="Search name, email, or student ID"
+            placeholder="Search name, email, student ID, or registration number"
             value={filters.search}
             onChange={handleFilterChange}
           />
@@ -272,6 +273,10 @@ export default function AdminStudentsPage() {
                       {student.profile?.studentId || "N/A"}
                     </p>
                     <p>
+                      <strong>Registration No:</strong>{" "}
+                      {student.profile?.registrationNumber || "N/A"}
+                    </p>
+                    <p>
                       <strong>Program:</strong> {student.profile?.program || "N/A"}
                     </p>
                   </div>
@@ -312,6 +317,10 @@ export default function AdminStudentsPage() {
                 {selectedStudent.profile?.studentId || "N/A"}
               </p>
               <p>
+                <strong>Registration No:</strong>{" "}
+                {selectedStudent.profile?.registrationNumber || "N/A"}
+              </p>
+              <p>
                 <strong>Faculty:</strong> {selectedStudent.profile?.faculty || "N/A"}
               </p>
               <p>
@@ -325,7 +334,23 @@ export default function AdminStudentsPage() {
                 <strong>Level:</strong> {selectedStudent.profile?.level || "N/A"}
               </p>
               <p>
+                <strong>Year of Study:</strong>{" "}
+                {selectedStudent.profile?.yearOfStudy || "N/A"}
+              </p>
+              <p>
+                <strong>Intake Year:</strong>{" "}
+                {selectedStudent.profile?.intakeYear || "N/A"}
+              </p>
+              <p>
                 <strong>Phone:</strong> {selectedStudent.profile?.phone || "N/A"}
+              </p>
+              <p>
+                <strong>Guardian Name:</strong>{" "}
+                {selectedStudent.profile?.guardianName || "N/A"}
+              </p>
+              <p>
+                <strong>Guardian Phone:</strong>{" "}
+                {selectedStudent.profile?.guardianPhone || "N/A"}
               </p>
               <p>
                 <strong>Academic Verified:</strong>{" "}
@@ -340,6 +365,12 @@ export default function AdminStudentsPage() {
                     ? "Unlock Academic Fields"
                     : "Verify Academic Fields"}
                 </Button>
+                <Link
+                  className="btn btn-outline"
+                  to={`/admin/students/${selectedStudent.id}/academic-records`}
+                >
+                  Academic Records
+                </Link>
               </div>
             </div>
           )}

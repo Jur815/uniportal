@@ -7,11 +7,16 @@ import Button from "../../../components/ui/Button";
 
 const initialProfile = {
   studentId: "",
+  registrationNumber: "",
   faculty: "",
   department: "",
   program: "",
   level: "1",
+  yearOfStudy: "1",
+  intakeYear: "",
   phone: "",
+  guardianName: "",
+  guardianPhone: "",
 };
 
 export default function StudentProfilePage() {
@@ -42,11 +47,16 @@ export default function StudentProfilePage() {
 
         setFormData({
           studentId: profile?.studentId || "",
+          registrationNumber: profile?.registrationNumber || "",
           faculty: profile?.faculty || "",
           department: profile?.department || "",
           program: profile?.program || "",
           level: String(profile?.level || 1),
+          yearOfStudy: String(profile?.yearOfStudy || profile?.level || 1),
+          intakeYear: profile?.intakeYear ? String(profile.intakeYear) : "",
           phone: profile?.phone || "",
+          guardianName: profile?.guardianName || "",
+          guardianPhone: profile?.guardianPhone || "",
         });
         setAcademicVerified(Boolean(profile?.academicVerified));
       } catch (err) {
@@ -86,6 +96,8 @@ export default function StudentProfilePage() {
       await updateMyProfile({
         ...formData,
         level: Number(formData.level),
+        yearOfStudy: Number(formData.yearOfStudy),
+        intakeYear: formData.intakeYear ? Number(formData.intakeYear) : "",
       });
       setSuccess("Profile updated successfully");
     } catch (err) {
@@ -146,6 +158,13 @@ export default function StudentProfilePage() {
             disabled={academicVerified}
           />
           <input
+            name="registrationNumber"
+            placeholder="Registration number"
+            value={formData.registrationNumber}
+            onChange={handleChange}
+            disabled={academicVerified}
+          />
+          <input
             name="faculty"
             placeholder="Faculty"
             value={formData.faculty}
@@ -177,9 +196,41 @@ export default function StudentProfilePage() {
             disabled={academicVerified}
           />
           <input
+            name="yearOfStudy"
+            type="number"
+            min="1"
+            max="6"
+            placeholder="Year of study"
+            value={formData.yearOfStudy}
+            onChange={handleChange}
+            disabled={academicVerified}
+          />
+          <input
+            name="intakeYear"
+            type="number"
+            min="1900"
+            max="3000"
+            placeholder="Intake year"
+            value={formData.intakeYear}
+            onChange={handleChange}
+            disabled={academicVerified}
+          />
+          <input
             name="phone"
             placeholder="Phone"
             value={formData.phone}
+            onChange={handleChange}
+          />
+          <input
+            name="guardianName"
+            placeholder="Guardian name"
+            value={formData.guardianName}
+            onChange={handleChange}
+          />
+          <input
+            name="guardianPhone"
+            placeholder="Guardian phone"
+            value={formData.guardianPhone}
             onChange={handleChange}
           />
 

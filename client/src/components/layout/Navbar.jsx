@@ -20,6 +20,9 @@ export default function Navbar() {
           <Link to={user ? "/dashboard" : "/"} className="navbar-brand-text">
             UniPortal
           </Link>
+          <span className="navbar-brand-subtitle">
+            University Management System
+          </span>
         </div>
 
         {user && (
@@ -28,15 +31,22 @@ export default function Navbar() {
               <>
                 <Link to="/courses">Courses</Link>
                 <Link to="/my-courses">My Courses</Link>
+                <Link to="/my-enrollments">Enrollment Slips</Link>
+                <Link to="/my-academic-records">Academic Records</Link>
               </>
             )}
 
             {user.role === "admin" && (
               <>
+                <Link to="/registrar/dashboard">Registrar Dashboard</Link>
                 <Link to="/admin/academic-setup">Academic Setup</Link>
+                <Link to="/admin/faculties">Faculties</Link>
+                <Link to="/admin/departments">Departments</Link>
                 <Link to="/admin/academic-sessions">Sessions</Link>
                 <Link to="/admin/courses">Manage Courses</Link>
                 <Link to="/admin/students">Students</Link>
+                <Link to="/admin/academic-records">Records</Link>
+                <Link to="/admin/demo-readiness">Demo Readiness</Link>
                 <Link to="/admin/courses/new">Create Course</Link>
                 <Link to="/admin/enrollments">Enrollments</Link>
               </>
@@ -44,7 +54,9 @@ export default function Navbar() {
 
             {user.role === "registrar" && (
               <>
+                <Link to="/registrar/dashboard">Registrar Dashboard</Link>
                 <Link to="/admin/enrollments">Enrollments</Link>
+                <Link to="/admin/academic-records">Records</Link>
               </>
             )}
           </nav>

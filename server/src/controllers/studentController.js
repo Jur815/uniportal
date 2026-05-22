@@ -44,7 +44,10 @@ exports.getStudents = async (req, res) => {
 
   if (search) {
     const matchingProfiles = await StudentProfile.find({
-      studentId: { $regex: search, $options: "i" },
+      $or: [
+        { studentId: { $regex: search, $options: "i" } },
+        { registrationNumber: { $regex: search, $options: "i" } },
+      ],
     }).select("user");
     const profileUserIds = matchingProfiles.map((profile) => profile.user);
 

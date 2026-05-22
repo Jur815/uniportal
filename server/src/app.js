@@ -14,6 +14,7 @@ const programRoutes = require("./routes/programRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const academicSessionRoutes = require("./routes/academicSessionRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const academicRecordRoutes = require("./routes/academicRecordRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 
 
@@ -85,6 +86,7 @@ app.use("/api/v1/programs", programRoutes);
 app.use("/api/v1/students", studentRoutes);
 app.use("/api/v1/academic-sessions", academicSessionRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/academic-records", academicRecordRoutes);
 
 app.use(errorHandler);
 

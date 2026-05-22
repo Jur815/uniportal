@@ -114,7 +114,7 @@ exports.enroll = async (req, res) => {
     academicYear: normalizedAcademicYear,
     semester: sem,
     isActive: true,
-    registrationOpen: true,
+    $or: [{ enrollmentStatus: "open" }, { registrationOpen: true }],
   });
 
   if (!activeSession) {
@@ -337,6 +337,39 @@ exports.getMyCourses = async (req, res) => {
     results: courses.length,
     summary,
     data: { courses, enrollments },
+  });
+};
+
+exports.getMyEnrollment = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Invalid enrollment ID",
+    });
+  }
+
+  const enrollment = await Enrollment.findOne({
+    _id: id,
+    student: req.user._id,
+  })
+    .populate(studentPopulate)
+    .populate(coursePopulate)
+    .populate(auditPopulate);
+
+  if (!enrollment) {
+    return res.status(404).json({
+      status: "fail",
+      message: "Enrollment not found",
+    });
+  }
+
+  const [enrichedEnrollment] = await enrichEnrollments([enrollment]);
+
+  return res.status(200).json({
+    status: "success",
+    data: { enrollment: enrichedEnrollment },
   });
 };
 

@@ -135,8 +135,11 @@ export default function EnrollmentDetailPage() {
           <div className="detail-list">
             <Info label="Full Name" value={student.name} />
             <Info label="Student ID" value={profile.studentId} />
+            <Info label="Registration No" value={profile.registrationNumber} />
             <Info label="Email" value={student.email} />
             <Info label="Account Status" value={student.status || "active"} />
+            <Info label="Guardian Name" value={profile.guardianName} />
+            <Info label="Guardian Phone" value={profile.guardianPhone} />
           </div>
         </Card>
 
@@ -147,6 +150,8 @@ export default function EnrollmentDetailPage() {
             <Info label="Department" value={profile.department} />
             <Info label="Program" value={profile.program} />
             <Info label="Level" value={profile.level} />
+            <Info label="Year of Study" value={profile.yearOfStudy} />
+            <Info label="Intake Year" value={profile.intakeYear} />
             <Info
               label="Academic Verified"
               value={profile.academicVerified ? "Yes" : "No"}

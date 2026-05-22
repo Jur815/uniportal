@@ -11,9 +11,11 @@ const buildPayload = (body) => {
     academicYear,
     semester,
     registrationOpen,
+    enrollmentStatus,
     startDate,
     endDate,
     isActive,
+    notes,
   } = body;
 
   if (typeof academicYear !== "string" || !YEAR_PATTERN.test(academicYear.trim())) {
@@ -29,6 +31,13 @@ const buildPayload = (body) => {
     return { error: "registrationOpen must be a boolean" };
   }
 
+  if (
+    enrollmentStatus !== undefined &&
+    !["open", "closed"].includes(enrollmentStatus)
+  ) {
+    return { error: "enrollmentStatus must be open or closed" };
+  }
+
   if (isActive !== undefined && typeof isActive !== "boolean") {
     return { error: "isActive must be a boolean" };
   }
@@ -38,13 +47,18 @@ const buildPayload = (body) => {
     semester: parsedSemester,
   };
 
-  if (registrationOpen !== undefined) {
+  if (enrollmentStatus !== undefined) {
+    payload.enrollmentStatus = enrollmentStatus;
+    payload.registrationOpen = enrollmentStatus === "open";
+  } else if (registrationOpen !== undefined) {
     payload.registrationOpen = registrationOpen;
+    payload.enrollmentStatus = registrationOpen ? "open" : "closed";
   }
 
   if (isActive !== undefined) payload.isActive = isActive;
   if (startDate) payload.startDate = new Date(startDate);
   if (endDate) payload.endDate = new Date(endDate);
+  if (typeof notes === "string") payload.notes = notes.trim();
 
   if (
     payload.startDate &&
@@ -137,9 +151,13 @@ exports.updateSession = async (req, res) => {
     academicYear: existing.academicYear,
     semester: existing.semester,
     registrationOpen: existing.registrationOpen,
+    enrollmentStatus:
+      existing.enrollmentStatus ||
+      (existing.registrationOpen ? "open" : "closed"),
     isActive: existing.isActive,
     startDate: existing.startDate,
     endDate: existing.endDate,
+    notes: existing.notes,
     ...req.body,
   };
   const { error, payload } = buildPayload(mergedBody);

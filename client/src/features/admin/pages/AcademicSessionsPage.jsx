@@ -14,15 +14,17 @@ import PageHeader from "../../../components/ui/PageHeader";
 const initialForm = {
   academicYear: "",
   semester: "1",
-  registrationOpen: false,
+  enrollmentStatus: "closed",
   isActive: false,
   startDate: "",
   endDate: "",
+  notes: "",
 };
 
 export default function AcademicSessionsPage() {
   const [sessions, setSessions] = useState([]);
   const [form, setForm] = useState(initialForm);
+  const [editingId, setEditingId] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState("");
   const [creating, setCreating] = useState(false);
@@ -57,20 +59,29 @@ export default function AcademicSessionsPage() {
     }));
   };
 
-  const submitSession = async (event) => {
+  const saveSession = async (event) => {
     event.preventDefault();
 
     try {
       setCreating(true);
-      await createAcademicSession({
+      const payload = {
         ...form,
         semester: Number(form.semester),
-      });
+      };
+
+      if (editingId) {
+        await updateAcademicSession(editingId, payload);
+        toast.success("Academic session updated");
+      } else {
+        await createAcademicSession(payload);
+        toast.success("Academic session created");
+      }
+
       setForm(initialForm);
+      setEditingId("");
       await loadSessions();
-      toast.success("Academic session created");
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to create session");
+      toast.error(err?.response?.data?.message || "Failed to save session");
     } finally {
       setCreating(false);
     }
@@ -89,6 +100,24 @@ export default function AcademicSessionsPage() {
     }
   };
 
+  const startEdit = (session) => {
+    setEditingId(session._id);
+    setForm({
+      academicYear: session.academicYear || "",
+      semester: String(session.semester || 1),
+      enrollmentStatus: getEnrollmentStatus(session),
+      isActive: Boolean(session.isActive),
+      startDate: toDateInput(session.startDate),
+      endDate: toDateInput(session.endDate),
+      notes: session.notes || "",
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId("");
+    setForm(initialForm);
+  };
+
   if (loading) return <Loader text="Loading academic sessions..." />;
 
   return (
@@ -103,10 +132,10 @@ export default function AcademicSessionsPage() {
       <div className="setup-grid">
         <Card>
           <div className="setup-section-header">
-            <h2>Create Session</h2>
+            <h2>{editingId ? "Edit Session" : "Create Session"}</h2>
             <p>Define the academic year, semester, and registration status.</p>
           </div>
-          <form className="form" onSubmit={submitSession}>
+          <form className="form" onSubmit={saveSession}>
             <input
               name="academicYear"
               placeholder="2025/2026"
@@ -129,15 +158,21 @@ export default function AcademicSessionsPage() {
               value={form.endDate}
               onChange={handleChange}
             />
-            <label className="checkbox-row">
-              <input
-                name="registrationOpen"
-                type="checkbox"
-                checked={form.registrationOpen}
-                onChange={handleChange}
-              />
-              Registration open
-            </label>
+            <select
+              name="enrollmentStatus"
+              value={form.enrollmentStatus}
+              onChange={handleChange}
+            >
+              <option value="closed">Enrollment closed</option>
+              <option value="open">Enrollment open</option>
+            </select>
+            <textarea
+              name="notes"
+              placeholder="Notes"
+              value={form.notes}
+              onChange={handleChange}
+              rows="3"
+            />
             <label className="checkbox-row">
               <input
                 name="isActive"
@@ -147,9 +182,20 @@ export default function AcademicSessionsPage() {
               />
               Active session
             </label>
-            <Button type="submit" disabled={creating}>
-              {creating ? "Creating..." : "Create Session"}
-            </Button>
+            <div className="course-actions">
+              <Button type="submit" disabled={creating}>
+                {creating
+                  ? "Saving..."
+                  : editingId
+                    ? "Update Session"
+                    : "Create Session"}
+              </Button>
+              {editingId && (
+                <Button type="button" onClick={cancelEdit} disabled={creating}>
+                  Cancel
+                </Button>
+              )}
+            </div>
           </form>
         </Card>
 
@@ -168,22 +214,29 @@ export default function AcademicSessionsPage() {
                     {session.academicYear} / Semester {session.semester}
                   </strong>
                   <span>
-                    {session.isActive ? "Active" : "Inactive"} / Registration{" "}
-                    {session.registrationOpen ? "Open" : "Closed"}
+                    {session.isActive ? "Active" : "Inactive"} / Enrollment{" "}
+                    {formatEnrollmentStatus(session)}
                   </span>
                   <span>
                     {formatDate(session.startDate)} - {formatDate(session.endDate)}
                   </span>
+                  {session.notes && <span>{session.notes}</span>}
                   <div className="course-actions">
+                    <Button onClick={() => startEdit(session)}>Edit</Button>
                     <Button
                       onClick={() =>
                         updateSession(session, {
-                          registrationOpen: !session.registrationOpen,
+                          enrollmentStatus:
+                            getEnrollmentStatus(session) === "open"
+                              ? "closed"
+                              : "open",
                         })
                       }
                       disabled={savingId === session._id}
                     >
-                      {session.registrationOpen ? "Close" : "Open"}
+                      {getEnrollmentStatus(session) === "open"
+                        ? "Close Enrollment"
+                        : "Open Enrollment"}
                     </Button>
                     <Button
                       onClick={() => updateSession(session, { isActive: true })}
@@ -205,4 +258,17 @@ export default function AcademicSessionsPage() {
 function formatDate(value) {
   if (!value) return "No date";
   return new Date(value).toLocaleDateString();
+}
+
+function getEnrollmentStatus(session) {
+  return session.enrollmentStatus || (session.registrationOpen ? "open" : "closed");
+}
+
+function formatEnrollmentStatus(session) {
+  return getEnrollmentStatus(session) === "open" ? "Open" : "Closed";
+}
+
+function toDateInput(value) {
+  if (!value) return "";
+  return new Date(value).toISOString().slice(0, 10);
 }

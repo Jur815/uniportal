@@ -6,7 +6,7 @@ const badRequest = (res, message) =>
   res.status(400).json({ status: "fail", message });
 
 const buildFacultyPayload = (body) => {
-  const { name, code, description } = body;
+  const { name, code, description, isActive } = body;
 
   if (typeof name !== "string" || !name.trim()) {
     return { error: "Faculty name is required" };
@@ -23,6 +23,13 @@ const buildFacultyPayload = (body) => {
 
   if (typeof description === "string") {
     payload.description = description.trim();
+  }
+
+  if (isActive !== undefined) {
+    if (typeof isActive !== "boolean") {
+      return { error: "isActive must be a boolean" };
+    }
+    payload.isActive = isActive;
   }
 
   return { payload };
@@ -52,7 +59,12 @@ exports.createFaculty = async (req, res) => {
 
 exports.getAllFaculties = async (req, res) => {
   try {
-    const faculties = await Faculty.find().sort("name");
+    const filter = {};
+
+    if (req.query.isActive === "true") filter.isActive = true;
+    if (req.query.isActive === "false") filter.isActive = false;
+
+    const faculties = await Faculty.find(filter).sort("name");
 
     res.status(200).json({
       status: "success",
@@ -124,19 +136,11 @@ exports.updateFaculty = async (req, res) => {
 
 exports.deleteFaculty = async (req, res) => {
   try {
-    const [departmentCount, courseCount] = await Promise.all([
-      Department.countDocuments({ faculty: req.params.id }),
-      Course.countDocuments({ facultyRef: req.params.id }),
-    ]);
-
-    if (departmentCount > 0 || courseCount > 0) {
-      return badRequest(
-        res,
-        "Faculty cannot be deleted while departments or courses use it",
-      );
-    }
-
-    const faculty = await Faculty.findByIdAndDelete(req.params.id);
+    const faculty = await Faculty.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false },
+      { new: true, runValidators: true },
+    );
 
     if (!faculty) {
       return res.status(404).json({
@@ -145,9 +149,9 @@ exports.deleteFaculty = async (req, res) => {
       });
     }
 
-    res.status(204).json({
+    res.status(200).json({
       status: "success",
-      data: null,
+      data: { faculty },
     });
   } catch (error) {
     res.status(500).json({

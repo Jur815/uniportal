@@ -34,8 +34,8 @@ export default function CreateCoursePage() {
       try {
         setSetupLoading(true);
         const [facultyData, departmentData, programData] = await Promise.all([
-          getFaculties(),
-          getDepartments(),
+          getFaculties({ isActive: true }),
+          getDepartments({ isActive: true }),
           getPrograms({ isActive: true }),
         ]);
 

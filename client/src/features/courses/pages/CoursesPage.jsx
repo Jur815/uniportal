@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { getActiveAcademicSession } from "../../../api/academicSessions.api";
 import { getAllCourses } from "../../../api/courses.api";
 import { enrollInCourse, getMyCourses } from "../../../api/enrollments.api";
+import { getMyProfile } from "../../../api/profile.api";
 import { useAuth } from "../../auth/context/useAuth";
 import CourseCard from "../components/CourseCard";
 import Loader from "../../../components/ui/Loader";
@@ -15,14 +16,29 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState([]);
   const [enrolledIds, setEnrolledIds] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
+  const [departmentFilter, setDepartmentFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [error, setError] = useState("");
 
-  const fetchCourses = useCallback(async (session) => {
+  const enrollmentOpen =
+    activeSession?.enrollmentStatus === "open" ||
+    activeSession?.registrationOpen === true;
+
+  const fetchCourses = useCallback(async (session, department = "") => {
     const params = session?.semester ? { semester: session.semester } : {};
+
+    if (department) {
+      const departmentData = await getAllCourses({ ...params, department });
+      const departmentCourses = departmentData?.data?.courses || [];
+
+      if (departmentCourses.length > 0) {
+        return { courses: departmentCourses, departmentFilter: department };
+      }
+    }
+
     const data = await getAllCourses(params);
-    return data?.data?.courses || [];
+    return { courses: data?.data?.courses || [], departmentFilter: "" };
   }, []);
 
   const fetchMyCourseIds = useCallback(async (session) => {
@@ -44,14 +60,20 @@ export default function CoursesPage() {
 
         const sessionData = await getActiveAcademicSession();
         const session = sessionData?.data?.session || null;
-        const [allCourses, myCourseIds] = await Promise.all([
-          fetchCourses(session),
+        const profileData =
+          user?.role === "student" ? await getMyProfile() : null;
+        const studentDepartment =
+          profileData?.data?.profile?.department?.trim() || "";
+
+        const [courseResult, myCourseIds] = await Promise.all([
+          fetchCourses(session, studentDepartment),
           fetchMyCourseIds(session),
         ]);
 
-        setCourses(allCourses);
+        setCourses(courseResult.courses);
         setEnrolledIds(myCourseIds);
         setActiveSession(session);
+        setDepartmentFilter(courseResult.departmentFilter);
       } catch (err) {
         console.error("Failed to load courses page:", err);
         setError(err?.response?.data?.message || "Failed to load courses");
@@ -61,7 +83,7 @@ export default function CoursesPage() {
     };
 
     bootstrapPage();
-  }, [fetchCourses, fetchMyCourseIds]);
+  }, [fetchCourses, fetchMyCourseIds, user?.role]);
 
   const handleEnroll = async (course) => {
     try {
@@ -75,7 +97,7 @@ export default function CoursesPage() {
         return;
       }
 
-      if (!activeSession?.registrationOpen) {
+      if (!enrollmentOpen) {
         toast.error("Registration is not open for the active academic session");
         return;
       }
@@ -111,13 +133,17 @@ export default function CoursesPage() {
         subtitle={
           activeSession
             ? `${activeSession.academicYear} / Semester ${activeSession.semester} registration ${
-                activeSession.registrationOpen ? "open" : "closed"
-              }.`
+                enrollmentOpen ? "open" : "closed"
+              }.${
+                departmentFilter
+                  ? ` Showing courses for ${departmentFilter}.`
+                  : ""
+              }`
             : "No active academic session has been configured."
         }
       />
 
-      {!activeSession?.registrationOpen && (
+      {!enrollmentOpen && (
         <p className="error-text">
           Registration is closed. You can browse courses, but enrollment requests
           are disabled.
@@ -136,7 +162,7 @@ export default function CoursesPage() {
               onEnroll={handleEnroll}
               loading={actionLoadingId === course._id}
               isEnrolled={enrolledIds.includes(course._id)}
-              enrollmentDisabled={!activeSession?.registrationOpen}
+              enrollmentDisabled={!enrollmentOpen}
             />
           ))}
         </div>

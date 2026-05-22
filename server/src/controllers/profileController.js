@@ -2,22 +2,30 @@ const StudentProfile = require("../models/StudentProfile");
 
 const allowedProfileFields = [
   "studentId",
+  "registrationNumber",
   "faculty",
   "department",
   "program",
   "level",
+  "yearOfStudy",
+  "intakeYear",
   "phone",
+  "guardianName",
+  "guardianPhone",
 ];
 
 const textProfileFields = allowedProfileFields.filter(
-  (field) => field !== "level",
+  (field) => !["level", "yearOfStudy", "intakeYear"].includes(field),
 );
 const protectedAcademicFields = [
   "studentId",
+  "registrationNumber",
   "faculty",
   "department",
   "program",
   "level",
+  "yearOfStudy",
+  "intakeYear",
 ];
 
 const badRequest = (res, message) =>
@@ -48,6 +56,31 @@ const validateProfilePayload = (body) => {
     }
 
     payload.level = level;
+  }
+
+  if (body.yearOfStudy !== undefined) {
+    const yearOfStudy = Number(body.yearOfStudy);
+
+    if (!Number.isInteger(yearOfStudy) || yearOfStudy < 1 || yearOfStudy > 6) {
+      return { error: "yearOfStudy must be a number between 1 and 6" };
+    }
+
+    payload.yearOfStudy = yearOfStudy;
+  }
+
+  if (body.intakeYear !== undefined && body.intakeYear !== "") {
+    const intakeYear = Number(body.intakeYear);
+    const currentYear = new Date().getFullYear();
+
+    if (
+      !Number.isInteger(intakeYear) ||
+      intakeYear < 1900 ||
+      intakeYear > currentYear + 1
+    ) {
+      return { error: "intakeYear must be a valid year" };
+    }
+
+    payload.intakeYear = intakeYear;
   }
 
   return { payload };

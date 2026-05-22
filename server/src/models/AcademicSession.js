@@ -17,8 +17,18 @@ const academicSessionSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    enrollmentStatus: {
+      type: String,
+      enum: ["open", "closed"],
+      default: "closed",
+    },
     startDate: Date,
     endDate: Date,
+    notes: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
     isActive: {
       type: Boolean,
       default: false,
@@ -31,6 +41,6 @@ academicSessionSchema.index(
   { academicYear: 1, semester: 1 },
   { unique: true },
 );
-academicSessionSchema.index({ isActive: 1, registrationOpen: 1 });
+academicSessionSchema.index({ isActive: 1, enrollmentStatus: 1 });
 
 module.exports = mongoose.model("AcademicSession", academicSessionSchema);
