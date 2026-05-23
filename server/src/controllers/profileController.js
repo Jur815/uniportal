@@ -151,7 +151,7 @@ exports.updateMyProfile = async (req, res) => {
     profile = await StudentProfile.findOneAndUpdate(
       { user: req.user._id },
       payload,
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
   }
 

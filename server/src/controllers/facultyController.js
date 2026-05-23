@@ -111,7 +111,7 @@ exports.updateFaculty = async (req, res) => {
     }
 
     const faculty = await Faculty.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     });
 
@@ -139,7 +139,7 @@ exports.deleteFaculty = async (req, res) => {
     const faculty = await Faculty.findByIdAndUpdate(
       req.params.id,
       { isActive: false },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!faculty) {

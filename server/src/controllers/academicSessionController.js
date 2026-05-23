@@ -165,7 +165,7 @@ exports.updateSession = async (req, res) => {
   if (error) return badRequest(res, error);
 
   const session = await AcademicSession.findByIdAndUpdate(req.params.id, payload, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
 

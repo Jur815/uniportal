@@ -286,7 +286,7 @@ exports.updateCourse = async (req, res) => {
 
   const course = await populateCourse(
     Course.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     }),
   );
@@ -316,7 +316,7 @@ exports.updateCourseStatus = async (req, res) => {
     Course.findByIdAndUpdate(
       req.params.id,
       { isActive },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     ),
   );
 

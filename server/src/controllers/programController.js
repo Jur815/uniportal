@@ -147,7 +147,7 @@ exports.updateProgram = async (req, res) => {
     }
 
     const program = await Program.findByIdAndUpdate(req.params.id, payload, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     })
       .populate("faculty", "name code")

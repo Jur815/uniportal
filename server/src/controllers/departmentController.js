@@ -139,7 +139,7 @@ exports.updateDepartment = async (req, res) => {
       req.params.id,
       payload,
       {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
       },
     ).populate("faculty", "name code");
@@ -168,7 +168,7 @@ exports.deleteDepartment = async (req, res) => {
     const department = await Department.findByIdAndUpdate(
       req.params.id,
       { isActive: false },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     ).populate("faculty", "name code");
 
     if (!department) {

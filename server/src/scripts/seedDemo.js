@@ -205,7 +205,7 @@ const upsertAcademicStructure = async () => {
     facultyByCode[code] = await Faculty.findOneAndUpdate(
       { code },
       { code, name, description, isActive: true },
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: "after", upsert: true, runValidators: true },
     );
   }
 
@@ -219,7 +219,7 @@ const upsertAcademicStructure = async () => {
         description: `${name} academic department.`,
         isActive: true,
       },
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: "after", upsert: true, runValidators: true },
     );
   }
 
@@ -234,7 +234,7 @@ const upsertAcademicStructure = async () => {
         description: `${name} undergraduate program.`,
         isActive: true,
       },
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: "after", upsert: true, runValidators: true },
     );
   }
 
@@ -270,7 +270,7 @@ const upsertCourses = async ({ facultyByCode, departmentByCode, programByCode })
         programRef: program._id,
         isActive: true,
       },
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: "after", upsert: true, runValidators: true },
     );
   }
 
@@ -317,7 +317,7 @@ const upsertAcademicSessions = async () => {
     await AcademicSession.findOneAndUpdate(
       { academicYear: session.academicYear, semester: session.semester },
       session,
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: "after", upsert: true, runValidators: true },
     );
   }
 };
@@ -348,7 +348,7 @@ const upsertStudentProfile = async (student, seed, programByCode, departmentByCo
       guardianPhone: `+21190100${phoneSuffix}`,
       academicVerified: true,
     },
-    { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
+    { returnDocument: "after", upsert: true, runValidators: true, setDefaultsOnInsert: true },
   );
 };
 
@@ -406,7 +406,7 @@ const upsertEnrollment = async ({
           ? "Academic verification incomplete"
           : undefined,
     },
-    { new: true, upsert: true, runValidators: true },
+    { returnDocument: "after", upsert: true, runValidators: true },
   );
 };
 
@@ -450,7 +450,7 @@ const upsertAcademicRecord = async (enrollment, courses, index = 0) => {
       GPA: Math.round((weightedPoints / totalCredits) * 100) / 100,
       remarks: "Demo academic record generated from approved enrollment.",
     },
-    { new: true, upsert: true, runValidators: true },
+    { returnDocument: "after", upsert: true, runValidators: true },
   );
 };
 

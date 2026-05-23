@@ -279,7 +279,7 @@ exports.updateStudentStatus = async (req, res) => {
   const user = await User.findOneAndUpdate(
     { _id: req.params.id, role: "student" },
     { status },
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   ).select("-password");
 
   if (!user) {
@@ -320,7 +320,7 @@ exports.updateAcademicVerification = async (req, res) => {
   const profile = await StudentProfile.findOneAndUpdate(
     { user: user._id },
     { academicVerified },
-    { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
+    { returnDocument: "after", upsert: true, runValidators: true, setDefaultsOnInsert: true },
   );
 
   res.status(200).json({

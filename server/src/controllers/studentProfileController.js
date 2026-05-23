@@ -6,7 +6,7 @@ exports.createOrUpdateMyProfile = async (req, res) => {
   const profile = await StudentProfile.findOneAndUpdate(
     { user: req.user._id },
     payload,
-    { new: true, upsert: true, runValidators: true },
+    { returnDocument: "after", upsert: true, runValidators: true },
   );
 
   res.status(200).json({ status: "success", data: { profile } });

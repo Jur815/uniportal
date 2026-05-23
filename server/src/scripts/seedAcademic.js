@@ -91,7 +91,7 @@ const seedAcademicSetup = async () => {
     const faculty = await Faculty.findOneAndUpdate(
       { code: item.code },
       item,
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: "after", upsert: true, runValidators: true },
     );
     facultyByCode[item.code] = faculty;
   }
@@ -106,7 +106,7 @@ const seedAcademicSetup = async () => {
         code: item.code,
         faculty: faculty._id,
       },
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: "after", upsert: true, runValidators: true },
     );
     departmentByCode[item.code] = department;
   }
@@ -123,7 +123,7 @@ const seedAcademicSetup = async () => {
         department: department._id,
         isActive: true,
       },
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: "after", upsert: true, runValidators: true },
     );
   }
 
