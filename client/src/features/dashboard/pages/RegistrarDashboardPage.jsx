@@ -46,11 +46,19 @@ export default function RegistrarDashboardPage() {
   const activeSession = summary?.activeAcademicSession;
 
   return (
-    <div className="p-6 space-y-6">
-      <PageHeader
-        title="Registrar Dashboard"
-        subtitle="Monitor pending registration requests and enrollment decisions."
-      />
+    <div className="dashboard-page">
+      <div className="dashboard-hero registrar-hero">
+        <div>
+          <p className="demo-kicker">Registrar Operations</p>
+          <h1>Enrollment Review Command Center</h1>
+          <p>Monitor registration requests, decisions, and active session status.</p>
+        </div>
+        <div className="hero-actions">
+          <Link className="btn btn-light" to="/admin/enrollments">
+            Full Review Queue
+          </Link>
+        </div>
+      </div>
 
       <div className="metric-grid">
         <DashboardMetric label="Pending" value={summary?.pendingEnrollments} />
@@ -93,11 +101,15 @@ export default function RegistrarDashboardPage() {
           )}
         </div>
 
-        <div className="card">
+        <div className="card priority-card">
+          <span>Priority Action</span>
           <h2>Enrollment Review</h2>
           <p>
             Use the review queue to approve, reject, or return enrollment
             requests for correction.
+          </p>
+          <p>
+            Pending requests: <strong>{summary?.pendingEnrollments ?? 0}</strong>
           </p>
           <div className="course-actions">
             <Link className="btn btn-primary" to="/admin/enrollments">

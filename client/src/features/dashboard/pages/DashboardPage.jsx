@@ -10,6 +10,10 @@ export default function DashboardPage() {
   const isAdmin = user?.role === "admin";
   const isRegistrar = user?.role === "registrar";
   const isStudent = user?.role === "student";
+  const enrollmentTotal = Number(kpis?.totalEnrollments || 0);
+  const approvedTotal = Number(kpis?.approvedEnrollments || 0);
+  const approvalRate =
+    enrollmentTotal > 0 ? Math.round((approvedTotal / enrollmentTotal) * 100) : 0;
 
   useEffect(() => {
     if (!isAdmin && !isRegistrar) return;
@@ -37,103 +41,87 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="bg-white shadow rounded-xl p-6 border">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome, {user.name}
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Role: <span className="font-medium capitalize">{user.role}</span>
-        </p>
-        <p className="text-gray-600">
-          Email: <span className="font-medium">{user.email}</span>
-        </p>
+    <div className="dashboard-page">
+      <div className="dashboard-hero">
+        <div>
+          <p className="demo-kicker">UniPortal Command Center</p>
+          <h1>University Management System</h1>
+          <p>
+            Welcome, {user.name}. You are signed in as{" "}
+            <strong className="capitalize">{user.role}</strong>.
+          </p>
+        </div>
+        <div className="hero-actions">
+          {isAdmin && (
+            <Link className="btn btn-light" to="/admin/demo-readiness">
+              Demo Command Center
+            </Link>
+          )}
+          {isRegistrar && (
+            <Link className="btn btn-light" to="/admin/enrollments">
+              Review Enrollments
+            </Link>
+          )}
+          {isStudent && (
+            <Link className="btn btn-light" to="/courses">
+              Start Registration
+            </Link>
+          )}
+        </div>
       </div>
 
       {isStudent && (
         <>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-white shadow rounded-xl p-5 border">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Browse Courses
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                View available courses for your program and semester.
-              </p>
-              <Link
-                to="/courses"
-                className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-              >
+          <div className="command-grid">
+            <div className="command-card">
+              <span>Registration</span>
+              <h2>Browse Courses</h2>
+              <p>View available courses for your program and semester.</p>
+              <Link to="/courses">
                 Go to Courses
               </Link>
             </div>
 
-            <div className="bg-white shadow rounded-xl p-5 border">
-              <h2 className="text-lg font-semibold text-gray-800">
-                My Courses
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Check the courses you have already registered.
-              </p>
-              <Link
-                to="/my-courses"
-                className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-              >
+            <div className="command-card">
+              <span>Student Record</span>
+              <h2>My Courses</h2>
+              <p>Check the courses you have already registered.</p>
+              <Link to="/my-courses">
                 View My Courses
               </Link>
             </div>
 
-            <div className="bg-white shadow rounded-xl p-5 border">
-              <h2 className="text-lg font-semibold text-gray-800">
-                My Profile
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Update your personal information and account details.
-              </p>
-              <Link
-                to="/profile"
-                className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-              >
+            <div className="command-card">
+              <span>Identity</span>
+              <h2>My Profile</h2>
+              <p>Update your personal information and account details.</p>
+              <Link to="/profile">
                 Edit Profile
               </Link>
             </div>
 
-            <div className="bg-white shadow rounded-xl p-5 border">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Enrollment Slips
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                View registration requests and print approved enrollment slips.
-              </p>
-              <Link
-                to="/my-enrollments"
-                className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-              >
+            <div className="command-card">
+              <span>Official Slip</span>
+              <h2>Enrollment Slips</h2>
+              <p>View registration requests and print approved enrollment slips.</p>
+              <Link to="/my-enrollments">
                 View Slips
               </Link>
             </div>
 
-            <div className="bg-white shadow rounded-xl p-5 border">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Academic Records
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                View generated academic records, grades, GPA, and remarks.
-              </p>
-              <Link
-                to="/my-academic-records"
-                className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-              >
+            <div className="command-card">
+              <span>Results</span>
+              <h2>Academic Records</h2>
+              <p>View generated academic records, grades, GPA, and remarks.</p>
+              <Link to="/my-academic-records">
                 View Records
               </Link>
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-blue-900">
-              Student Quick Summary
-            </h2>
-            <p className="text-sm text-blue-800 mt-2">
+          <div className="insight-panel">
+            <h2>Student Quick Summary</h2>
+            <p>
               Use this dashboard to access course registration, review your
               enrolled courses, and keep your profile up to date.
             </p>
@@ -144,6 +132,25 @@ export default function DashboardPage() {
       {(isAdmin || isRegistrar) && (
         <>
           {kpiError && <p className="error-text">{kpiError}</p>}
+
+          <div className="dashboard-strip">
+            <div>
+              <span>Institutional Snapshot</span>
+              <strong>
+                {kpis?.activeAcademicSession
+                  ? `${kpis.activeAcademicSession.academicYear} Semester ${kpis.activeAcademicSession.semester}`
+                  : "No active session"}
+              </strong>
+            </div>
+            <div>
+              <span>Enrollment Status</span>
+              <StatusBadge status={kpis?.enrollmentStatus || "closed"} />
+            </div>
+            <div>
+              <span>Approval Rate</span>
+              <strong>{approvalRate}%</strong>
+            </div>
+          </div>
 
           <div className="metric-grid">
             <DashboardMetric label="Students" value={kpis?.totalStudents} />
@@ -216,85 +223,55 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="command-grid">
             {isAdmin && (
-              <div className="bg-white shadow rounded-xl p-5 border">
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Academic Setup
-                </h2>
-                <p className="text-sm text-gray-600 mt-2">
-                  Manage faculties, departments, programs, and course structure.
-                </p>
-                <Link
-                  to="/admin/academic-setup"
-                  className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-                >
+              <div className="command-card">
+                <span>Structure</span>
+                <h2>Academic Setup</h2>
+                <p>Manage faculties, departments, programs, and course structure.</p>
+                <Link to="/admin/academic-setup">
                   Academic Setup
                 </Link>
               </div>
             )}
 
             {isAdmin && (
-              <div className="bg-white shadow rounded-xl p-5 border">
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Student Management
-                </h2>
-                <p className="text-sm text-gray-600 mt-2">
-                  Review student profiles and manage account status.
-                </p>
-                <Link
-                  to="/admin/students"
-                  className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-                >
+              <div className="command-card">
+                <span>Registry</span>
+                <h2>Student Management</h2>
+                <p>Review student profiles and manage account status.</p>
+                <Link to="/admin/students">
                   View Students
                 </Link>
               </div>
             )}
 
-            <div className="bg-white shadow rounded-xl p-5 border">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Enrollments
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Review and manage student enrollment requests.
-              </p>
-              <Link
-                to="/admin/enrollments"
-                className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-              >
+            <div className="command-card">
+              <span>Registrar Queue</span>
+              <h2>Enrollments</h2>
+              <p>Review and manage student enrollment requests.</p>
+              <Link to="/admin/enrollments">
                 View Enrollments
               </Link>
             </div>
 
             {isAdmin && (
-              <div className="bg-white shadow rounded-xl p-5 border">
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Academic Sessions
-                </h2>
-                <p className="text-sm text-gray-600 mt-2">
-                  Open and close registration windows.
-                </p>
-                <Link
-                  to="/admin/academic-sessions"
-                  className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-                >
+              <div className="command-card">
+                <span>Calendar</span>
+                <h2>Academic Sessions</h2>
+                <p>Open and close registration windows.</p>
+                <Link to="/admin/academic-sessions">
                   Manage Sessions
                 </Link>
               </div>
             )}
 
             {isAdmin && (
-              <div className="bg-white shadow rounded-xl p-5 border">
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Demo Readiness
-                </h2>
-                <p className="text-sm text-gray-600 mt-2">
-                  Review completed modules, sample accounts, and demo steps.
-                </p>
-                <Link
-                  to="/admin/demo-readiness"
-                  className="inline-block mt-4 text-blue-600 font-medium hover:underline"
-                >
+              <div className="command-card command-card-highlight">
+                <span>Presentation</span>
+                <h2>Demo Command Center</h2>
+                <p>Review completed modules, sample accounts, and demo steps.</p>
+                <Link to="/admin/demo-readiness">
                   Open Demo Guide
                 </Link>
               </div>
@@ -335,11 +312,9 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-xl p-5">
-            <h2 className="text-lg font-semibold text-green-900">
-              Admin Quick Summary
-            </h2>
-            <p className="text-sm text-green-800 mt-2">
+          <div className="insight-panel">
+            <h2>Institutional Operations Summary</h2>
+            <p>
               Use this dashboard to manage courses, monitor enrollments, and
               oversee student academic operations.
             </p>
