@@ -500,6 +500,39 @@ exports.updateEnrollmentStatus = async (req, res) => {
   }
 
   const previousStatus = enrollment.status;
+
+  if (status === "approved") {
+    const courseDocs = await Course.find({ _id: { $in: enrollment.courses } });
+    const totalCredits = courseDocs.reduce(
+      (sum, course) => sum + Number(course.creditHours || 0),
+      0,
+    );
+    const hasInactiveCourse = courseDocs.some((course) => course.isActive === false);
+
+    if (courseDocs.length !== enrollment.courses.length) {
+      return badRequest(
+        res,
+        "Cannot approve enrollment because one or more selected courses no longer exist.",
+      );
+    }
+
+    if (hasInactiveCourse) {
+      return badRequest(
+        res,
+        "Cannot approve enrollment because one or more selected courses are inactive.",
+      );
+    }
+
+    if (totalCredits > MAX_CREDITS) {
+      return badRequest(
+        res,
+        `Cannot approve enrollment because selected credits exceed the ${MAX_CREDITS} credit limit.`,
+      );
+    }
+
+    enrollment.totalCredits = totalCredits;
+  }
+
   const normalizedReasonType =
     ["rejected", "correction_required"].includes(status) &&
     typeof decisionReasonType === "string"

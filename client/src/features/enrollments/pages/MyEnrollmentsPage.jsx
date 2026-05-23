@@ -74,6 +74,7 @@ export default function MyEnrollmentsPage() {
                   <th>Status</th>
                   <th>Courses</th>
                   <th>Total Credits</th>
+                  <th>Action Needed</th>
                   <th>Slip</th>
                 </tr>
               </thead>
@@ -87,6 +88,7 @@ export default function MyEnrollmentsPage() {
                     </td>
                     <td>{enrollment.courses?.length || 0}</td>
                     <td>{enrollment.totalCredits ?? getTotalCredits(enrollment)}</td>
+                    <td>{getActionNeeded(enrollment)}</td>
                     <td>
                       <Link to={`/my-enrollments/${enrollment._id}`}>
                         {enrollment.status === "approved" ? "View Slip" : "View Status"}
@@ -123,6 +125,18 @@ function formatStatus(status = "pending") {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function getActionNeeded(enrollment) {
+  if (!["rejected", "correction_required"].includes(enrollment.status)) {
+    return "N/A";
+  }
+
+  if (enrollment.decisionReasonType && enrollment.rejectionReason) {
+    return `${enrollment.decisionReasonType}: ${enrollment.rejectionReason}`;
+  }
+
+  return enrollment.rejectionReason || enrollment.decisionReasonType || "Review status";
 }
 
 function getTotalCredits(enrollment) {

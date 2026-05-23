@@ -45,6 +45,7 @@ export default function Navbar() {
                 <Link to="/admin/academic-sessions">Sessions</Link>
                 <Link to="/admin/courses">Manage Courses</Link>
                 <Link to="/admin/students">Students</Link>
+                <Link to="/admin/students/new">Create Student</Link>
                 <Link to="/admin/academic-records">Records</Link>
                 <Link to="/admin/demo-readiness">Demo Readiness</Link>
                 <Link to="/admin/courses/new">Create Course</Link>

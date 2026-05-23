@@ -5,6 +5,11 @@ export const getStudents = async (params = {}) => {
   return response.data;
 };
 
+export const createStudent = async (payload) => {
+  const response = await http.post("/students", payload);
+  return response.data;
+};
+
 export const getStudentDetail = async (studentId) => {
   const response = await http.get(`/students/${studentId}`);
   return response.data;

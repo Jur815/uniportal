@@ -68,6 +68,9 @@ export default function Sidebar() {
             <NavLink to="/admin/students" className={getNavLinkClass}>
               Students
             </NavLink>
+            <NavLink to="/admin/students/new" className={getNavLinkClass}>
+              Create Student
+            </NavLink>
             <NavLink to="/admin/academic-records" className={getNavLinkClass}>
               Academic Records
             </NavLink>

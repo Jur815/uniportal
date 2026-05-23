@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const crypto = require("crypto");
+const validator = require("validator");
 const StudentProfile = require("../models/StudentProfile");
 const User = require("../models/User");
 
@@ -17,6 +19,160 @@ const formatStudent = (user, profile) => ({
 
 const normalize = (value) =>
   typeof value === "string" ? value.trim() : "";
+
+const generateTemporaryPassword = () =>
+  `Student-${crypto.randomBytes(9).toString("base64url")}1!`;
+
+const parseOptionalDate = (value) => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+exports.createStudent = async (req, res) => {
+  const {
+    fullName,
+    name,
+    email,
+    password,
+    studentId,
+    registrationNumber,
+    faculty,
+    department,
+    program,
+    level,
+    yearOfStudy,
+    intakeYear,
+    phone,
+    gender,
+    dateOfBirth,
+    address,
+    guardianName,
+    guardianPhone,
+  } = req.body;
+  const trimmedName = normalize(fullName || name);
+  const normalizedEmail =
+    typeof email === "string" ? email.toLowerCase().trim() : "";
+  const normalizedStudentId = normalize(studentId);
+  const normalizedRegistrationNumber = normalize(registrationNumber);
+  const normalizedFaculty = normalize(faculty);
+  const normalizedDepartment = normalize(department);
+  const normalizedProgram = normalize(program);
+  const parsedLevel = Number(level || yearOfStudy);
+  const parsedYearOfStudy = yearOfStudy ? Number(yearOfStudy) : parsedLevel;
+  const parsedIntakeYear = intakeYear ? Number(intakeYear) : undefined;
+  const parsedDateOfBirth = parseOptionalDate(dateOfBirth);
+  const hasProvidedPassword = typeof password === "string" && password.trim();
+  const temporaryPassword = hasProvidedPassword
+    ? undefined
+    : generateTemporaryPassword();
+  const studentPassword = hasProvidedPassword ? password : temporaryPassword;
+
+  if (!trimmedName) return badRequest(res, "Full name is required");
+  if (!normalizedEmail) return badRequest(res, "Email is required");
+  if (!validator.isEmail(normalizedEmail)) {
+    return badRequest(res, "Please provide a valid email");
+  }
+  if (!studentPassword || studentPassword.length < 6) {
+    return badRequest(res, "Password must be at least 6 characters");
+  }
+  if (!normalizedStudentId && !normalizedRegistrationNumber) {
+    return badRequest(res, "Student ID or registration number is required");
+  }
+  if (!normalizedFaculty) return badRequest(res, "Faculty is required");
+  if (!normalizedDepartment) return badRequest(res, "Department is required");
+  if (!normalizedProgram) return badRequest(res, "Program is required");
+  if (!Number.isInteger(parsedLevel) || parsedLevel < 1 || parsedLevel > 6) {
+    return badRequest(res, "Level/year must be a number between 1 and 6");
+  }
+  if (
+    parsedYearOfStudy &&
+    (!Number.isInteger(parsedYearOfStudy) ||
+      parsedYearOfStudy < 1 ||
+      parsedYearOfStudy > 6)
+  ) {
+    return badRequest(res, "yearOfStudy must be a number between 1 and 6");
+  }
+  if (
+    parsedIntakeYear &&
+    (!Number.isInteger(parsedIntakeYear) ||
+      parsedIntakeYear < 1900 ||
+      parsedIntakeYear > 3000)
+  ) {
+    return badRequest(res, "intakeYear must be a valid year");
+  }
+  if (parsedDateOfBirth === null) {
+    return badRequest(res, "dateOfBirth must be a valid date");
+  }
+
+  const existingUser = await User.findOne({ email: normalizedEmail });
+  if (existingUser) return badRequest(res, "Email already registered");
+
+  if (normalizedStudentId) {
+    const existingStudentId = await StudentProfile.findOne({
+      studentId: normalizedStudentId,
+    });
+    if (existingStudentId) return badRequest(res, "Student ID already exists");
+  }
+
+  if (normalizedRegistrationNumber) {
+    const existingRegistration = await StudentProfile.findOne({
+      registrationNumber: normalizedRegistrationNumber,
+    });
+    if (existingRegistration) {
+      return badRequest(res, "Registration number already exists");
+    }
+  }
+
+  const user = await User.create({
+    name: trimmedName,
+    email: normalizedEmail,
+    password: studentPassword,
+    role: "student",
+    status: "active",
+  });
+
+  try {
+    const profile = await StudentProfile.create({
+      user: user._id,
+      studentId: normalizedStudentId || undefined,
+      registrationNumber: normalizedRegistrationNumber || undefined,
+      faculty: normalizedFaculty,
+      department: normalizedDepartment,
+      program: normalizedProgram,
+      level: parsedLevel,
+      yearOfStudy: parsedYearOfStudy,
+      intakeYear: parsedIntakeYear,
+      phone: normalize(phone),
+      gender: normalize(gender),
+      dateOfBirth: parsedDateOfBirth,
+      address: normalize(address),
+      guardianName: normalize(guardianName),
+      guardianPhone: normalize(guardianPhone),
+      academicVerified: true,
+    });
+
+    return res.status(201).json({
+      status: "success",
+      message: "Student created successfully.",
+      data: {
+        student: formatStudent(user, profile.toObject()),
+        temporaryPassword,
+      },
+    });
+  } catch (err) {
+    await User.findByIdAndDelete(user._id);
+
+    if (err.code === 11000) {
+      return badRequest(
+        res,
+        "Student ID or registration number already exists",
+      );
+    }
+
+    throw err;
+  }
+};
 
 exports.getStudents = async (req, res) => {
   const userFilter = { role: "student" };

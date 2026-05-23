@@ -15,6 +15,7 @@ import MyAcademicRecordsPage from "../../features/enrollments/pages/MyAcademicRe
 import AcademicSetupPage from "../../features/admin/pages/AcademicSetupPage";
 import AdminCourseManagementPage from "../../features/admin/pages/AdminCourseManagementPage";
 import AdminCourseDetailPage from "../../features/admin/pages/AdminCourseDetailPage";
+import CreateStudentPage from "../../features/admin/pages/CreateStudentPage";
 import AdminStudentsPage from "../../features/admin/pages/AdminStudentsPage";
 import AdminAcademicRecordsPage from "../../features/admin/pages/AdminAcademicRecordsPage";
 import AdminDemoReadinessPage from "../../features/admin/pages/AdminDemoReadinessPage";
@@ -116,6 +117,10 @@ export const router = createBrowserRouter([
               {
                 path: "admin/students",
                 element: <AdminStudentsPage />,
+              },
+              {
+                path: "admin/students/new",
+                element: <CreateStudentPage />,
               },
               {
                 path: "admin/demo-readiness",

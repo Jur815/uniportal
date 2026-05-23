@@ -194,6 +194,12 @@ export default function AdminStudentsPage() {
         subtitle="Search students, review academic profiles, and manage account status."
       />
 
+      <div className="course-detail-actions">
+        <Link className="btn" to="/admin/students/new">
+          Create Student
+        </Link>
+      </div>
+
       {error && <p className="error-text">{error}</p>}
 
       <Card>

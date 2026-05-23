@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.use(protect);
 
+router.post("/", restrictTo("admin"), ctrl.createStudent);
 router.get("/", restrictTo("admin", "registrar"), ctrl.getStudents);
 router.get("/:id", restrictTo("admin", "registrar"), ctrl.getStudent);
 router.patch("/:id/status", restrictTo("admin"), ctrl.updateStudentStatus);
