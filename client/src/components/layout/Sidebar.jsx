@@ -13,6 +13,11 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
+        <img
+          src="/branding/uniportal-logo.svg"
+          alt="UniPortal"
+          className="sidebar-logo"
+        />
         <h3 className="sidebar-title">Navigation</h3>
       </div>
 

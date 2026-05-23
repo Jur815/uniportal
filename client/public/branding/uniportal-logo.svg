@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="96" viewBox="0 0 360 96" role="img" aria-labelledby="title desc">
+  <title id="title">UniPortal logo</title>
+  <desc id="desc">Institutional blue and gold UniPortal academic portal wordmark.</desc>
+  <defs>
+    <linearGradient id="markBlue" x1="14" x2="82" y1="10" y2="86" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0b2f6b"/>
+      <stop offset="1" stop-color="#071f49"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="96" rx="18" fill="none"/>
+  <g>
+    <rect x="12" y="12" width="72" height="72" rx="18" fill="url(#markBlue)"/>
+    <path d="M25 39.5 48 27l23 12.5L48 52 25 39.5Z" fill="#d4af37"/>
+    <path d="M34 48.5v10.8c0 3.4 6.3 7.2 14 7.2s14-3.8 14-7.2V48.5L48 56.1 34 48.5Z" fill="#ffffff"/>
+    <path d="M69.5 42.2v14.6" stroke="#d4af37" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="69.5" cy="60.5" r="3.5" fill="#d4af37"/>
+    <path d="M27 70h42" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g fill="#0b2f6b">
+    <text x="102" y="47" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="800" letter-spacing="0">UniPortal</text>
+    <text x="104" y="69" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="1.4" fill="#6b7280">INSTITUTIONAL STUDENT INFORMATION SYSTEM</text>
+  </g>
+</svg>

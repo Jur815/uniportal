@@ -54,42 +54,40 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "40px auto" }}>
-      <h2>Login</h2>
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-brand">
+          <img
+            src="/branding/uniportal-logo.svg"
+            alt="UniPortal"
+            className="login-logo"
+          />
+          <p>Institutional Student Information System</p>
+        </div>
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 12 }}>
+        <form className="login-form" onSubmit={handleSubmit}>
           <input
             type="email"
             name="email"
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            style={{ width: "100%", padding: 10 }}
           />
-        </div>
-
-        <div style={{ marginBottom: 12 }}>
           <input
             type="password"
             name="password"
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            style={{ width: "100%", padding: 10 }}
           />
-        </div>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+          {error && <p className="error-text">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: 10, width: "100%" }}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          <button type="submit" disabled={loading} className="btn">
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

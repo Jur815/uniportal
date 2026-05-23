@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">UniPortal mark</title>
+  <desc id="desc">Blue academic shield with gold graduation cap.</desc>
+  <defs>
+    <linearGradient id="markBlue" x1="16" x2="112" y1="12" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0b2f6b"/>
+      <stop offset="1" stop-color="#071f49"/>
+    </linearGradient>
+  </defs>
+  <rect x="12" y="12" width="104" height="104" rx="26" fill="url(#markBlue)"/>
+  <path d="M31 55 64 37l33 18-33 18-33-18Z" fill="#d4af37"/>
+  <path d="M44 67.5v17c0 5.2 9 11 20 11s20-5.8 20-11v-17L64 78.5 44 67.5Z" fill="#ffffff"/>
+  <path d="M95 59v21" stroke="#d4af37" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="95" cy="87" r="6" fill="#d4af37"/>
+  <path d="M35 101h58" stroke="#d4af37" stroke-width="7" stroke-linecap="round"/>
+</svg>

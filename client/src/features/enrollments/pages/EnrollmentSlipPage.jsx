@@ -124,7 +124,11 @@ export default function EnrollmentSlipPage() {
 
       <section className="enrollment-slip">
         <div className="enrollment-slip-header">
-          <p className="enrollment-slip-kicker">UniPortal</p>
+          <img
+            src="/branding/uniportal-logo.svg"
+            alt="UniPortal"
+            className="enrollment-slip-logo"
+          />
           <h1>Official Enrollment Slip</h1>
           <p>Student Course Registration Summary</p>
         </div>

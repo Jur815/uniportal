@@ -44,7 +44,10 @@ export default function DashboardPage() {
     <div className="dashboard-page">
       <div className="dashboard-hero">
         <div>
-          <p className="demo-kicker">UniPortal Command Center</p>
+          <div className="hero-brand-lockup">
+            <img src="/branding/uniportal-mark.svg" alt="" />
+            <p className="demo-kicker">UniPortal Command Center</p>
+          </div>
           <h1>University Management System</h1>
           <p>
             Welcome, {user.name}. You are signed in as{" "}

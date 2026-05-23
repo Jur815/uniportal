@@ -18,10 +18,15 @@ export default function Navbar() {
       <div className="navbar-left">
         <div className="navbar-brand">
           <Link to={user ? "/dashboard" : "/"} className="navbar-brand-text">
-            UniPortal
+            <img
+              src="/branding/uniportal-mark.svg"
+              alt=""
+              className="navbar-logo-mark"
+            />
+            <span>UniPortal</span>
           </Link>
           <span className="navbar-brand-subtitle">
-            University Management System
+            Institutional Student Information System
           </span>
         </div>
 
