@@ -431,6 +431,16 @@ a {
   gap: 10px;
 }
 
+.course-enrollment-state {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.course-enrollment-state p {
+  margin: 0;
+}
+
 .status-active,
 .status-muted {
   border-radius: 999px;

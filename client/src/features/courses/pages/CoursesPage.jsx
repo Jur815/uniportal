@@ -14,7 +14,7 @@ export default function CoursesPage() {
   const { user } = useAuth();
 
   const [courses, setCourses] = useState([]);
-  const [enrolledIds, setEnrolledIds] = useState([]);
+  const [courseEnrollmentMap, setCourseEnrollmentMap] = useState({});
   const [activeSession, setActiveSession] = useState(null);
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [loading, setLoading] = useState(true);
@@ -41,15 +41,24 @@ export default function CoursesPage() {
     return { courses: data?.data?.courses || [], departmentFilter: "" };
   }, []);
 
-  const fetchMyCourseIds = useCallback(async (session) => {
-    if (user?.role !== "student") return [];
+  const fetchMyCourseEnrollments = useCallback(async (session) => {
+    if (user?.role !== "student") return {};
 
     const params = session?.academicYear
       ? { academicYear: session.academicYear, semester: session.semester }
       : {};
     const data = await getMyCourses(params);
     const myCourses = data?.data?.courses || [];
-    return myCourses.map((course) => course._id);
+
+    return myCourses.reduce((map, course) => {
+      map[course._id] = {
+        status: course.enrollmentStatus || "pending",
+        enrollmentId: course.enrollmentId,
+        rejectionReason: course.rejectionReason,
+        decisionReasonType: course.decisionReasonType,
+      };
+      return map;
+    }, {});
   }, [user?.role]);
 
   useEffect(() => {
@@ -65,13 +74,13 @@ export default function CoursesPage() {
         const studentDepartment =
           profileData?.data?.profile?.department?.trim() || "";
 
-        const [courseResult, myCourseIds] = await Promise.all([
+        const [courseResult, myCourseEnrollments] = await Promise.all([
           fetchCourses(session, studentDepartment),
-          fetchMyCourseIds(session),
+          fetchMyCourseEnrollments(session),
         ]);
 
         setCourses(courseResult.courses);
-        setEnrolledIds(myCourseIds);
+        setCourseEnrollmentMap(myCourseEnrollments);
         setActiveSession(session);
         setDepartmentFilter(courseResult.departmentFilter);
       } catch (err) {
@@ -83,7 +92,7 @@ export default function CoursesPage() {
     };
 
     bootstrapPage();
-  }, [fetchCourses, fetchMyCourseIds, user?.role]);
+  }, [fetchCourses, fetchMyCourseEnrollments, user?.role]);
 
   const handleEnroll = async (course) => {
     try {
@@ -92,7 +101,7 @@ export default function CoursesPage() {
         return;
       }
 
-      if (enrolledIds.includes(course._id)) {
+      if (courseEnrollmentMap[course._id]) {
         toast.error("You already have an enrollment request for this course");
         return;
       }
@@ -104,15 +113,20 @@ export default function CoursesPage() {
 
       setActionLoadingId(course._id);
 
-      await enrollInCourse({
+      const response = await enrollInCourse({
         academicYear: activeSession.academicYear,
         semester: Number(activeSession.semester),
         courseId: course._id,
       });
+      const enrollment = response?.data?.enrollment;
 
-      setEnrolledIds((prev) =>
-        prev.includes(course._id) ? prev : [...prev, course._id],
-      );
+      setCourseEnrollmentMap((prev) => ({
+        ...prev,
+        [course._id]: {
+          status: enrollment?.status || "pending",
+          enrollmentId: enrollment?._id,
+        },
+      }));
 
       toast.success("Enrollment request submitted");
     } catch (err) {
@@ -161,7 +175,8 @@ export default function CoursesPage() {
               showEnroll={user?.role === "student"}
               onEnroll={handleEnroll}
               loading={actionLoadingId === course._id}
-              isEnrolled={enrolledIds.includes(course._id)}
+              enrollmentStatus={courseEnrollmentMap[course._id]?.status}
+              enrollmentMeta={courseEnrollmentMap[course._id]}
               enrollmentDisabled={!enrollmentOpen}
             />
           ))}

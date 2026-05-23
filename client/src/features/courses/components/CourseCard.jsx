@@ -8,19 +8,26 @@ export default function CourseCard({
   onEnroll,
   loading = false,
   isEnrolled = false,
+  enrollmentStatus = "",
+  enrollmentMeta = null,
   enrollmentDisabled = false,
   showEnrollmentMeta = false,
 }) {
   const facultyName = course.facultyRef?.name;
   const departmentName = course.departmentRef?.name || course.department;
   const programName = course.programRef?.name || course.program;
+  const hasEnrollmentRequest = Boolean(enrollmentStatus) || isEnrolled;
+  const canRequestEnrollment =
+    showEnroll &&
+    typeof onEnroll === "function" &&
+    !hasEnrollmentRequest &&
+    !enrollmentDisabled &&
+    course.isActive !== false;
 
   const handleEnroll = () => {
     if (
       !loading &&
-      !isEnrolled &&
-      !enrollmentDisabled &&
-      typeof onEnroll === "function"
+      canRequestEnrollment
     ) {
       onEnroll(course);
     }
@@ -83,20 +90,51 @@ export default function CourseCard({
         </>
       )}
 
-      {showEnroll && typeof onEnroll === "function" && (
-        <Button
-          onClick={handleEnroll}
-          disabled={loading || isEnrolled || enrollmentDisabled}
-        >
-          {isEnrolled
-            ? "Request Submitted"
-            : loading
+      {showEnroll && hasEnrollmentRequest && (
+        <div className="course-enrollment-state">
+          <span className={`review-status status-${enrollmentStatus || "pending"}`}>
+            {formatStatus(enrollmentStatus || "pending")}
+          </span>
+          {enrollmentMeta?.rejectionReason && (
+            <p>
+              <strong>Action Needed:</strong>{" "}
+              {enrollmentMeta.decisionReasonType
+                ? `${enrollmentMeta.decisionReasonType}: ${enrollmentMeta.rejectionReason}`
+                : enrollmentMeta.rejectionReason}
+            </p>
+          )}
+        </div>
+      )}
+
+      {showEnroll && typeof onEnroll === "function" && !hasEnrollmentRequest && (
+        <div className="course-enrollment-state">
+          {enrollmentDisabled && (
+            <p className="error-text">Registration is currently closed.</p>
+          )}
+          {course.isActive === false && (
+            <p className="error-text">This course is currently inactive.</p>
+          )}
+          <Button
+            onClick={handleEnroll}
+            disabled={loading || !canRequestEnrollment}
+          >
+            {loading
               ? "Submitting..."
               : enrollmentDisabled
                 ? "Registration Closed"
-                : "Request Enrollment"}
-        </Button>
+                : course.isActive === false
+                  ? "Course Inactive"
+                  : "Request Enrollment"}
+          </Button>
+        </div>
       )}
     </Card>
   );
+}
+
+function formatStatus(status = "pending") {
+  return status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
