@@ -47,7 +47,6 @@ exports.restrictTo =
       });
     }
     next();
-    console.log("RBAC:", req.user.email, req.user.role, "needed:", roles);
-    };
+  };
   
     

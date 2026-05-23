@@ -83,7 +83,7 @@ cd server
 npm run seed:demo
 ```
 
-The seed creates or updates demo users, academic structure, courses, an active academic session, sample enrollments, and one academic record. It does not delete existing data.
+The seed creates or updates demo users, academic structure, courses, active and historical academic sessions, sample enrollments, registrar audit history, and academic records for approved enrollments. It does not delete existing data.
 
 Demo account emails:
 

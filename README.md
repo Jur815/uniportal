@@ -1,344 +1,292 @@
-# 🎓 UniPortal — University Management System (MERN Stack)
+# UniPortal
 
-UniPortal is a modern web-based university management platform designed to simplify academic administration and improve communication between students and institutional staff.
+UniPortal is a MERN-based institutional MVP for university academic setup, student management, course registration, registrar approval, enrollment slips, and academic record foundations.
 
-The system provides secure authentication, user management, academic record handling, and scalable infrastructure for educational institutions.
+It is prepared for demo and pilot discussions with universities and colleges. It should be presented as a focused academic registration and registrar workflow MVP, not yet as a complete production Student Information System.
 
-This project is being developed as a real-world SaaS product using the MERN stack (MongoDB, Express.js, React, Node.js).
+## Current Demo Scope
 
----
+UniPortal currently supports:
 
-## 🚀 Project Status
+- JWT authentication and role-based access control.
+- Admin, registrar, and student user roles.
+- Admin dashboard with institutional KPIs.
+- Registrar dashboard with enrollment review KPIs.
+- Faculty, department, and program academic setup.
+- Course creation, management, search/filter, activate/deactivate, and course detail views.
+- Student management with academic identity fields.
+- Admin-created student accounts and linked student profiles.
+- Academic session and enrollment window control.
+- Student course browsing and enrollment requests.
+- Registrar approval workflow with pending, approved, rejected, and correction-required statuses.
+- Registrar decision audit logs.
+- Student enrollment status views.
+- Printable approved enrollment slips.
+- Academic records foundation with courses, credits, grades, GPA, and remarks.
+- Institutional demo seed data and demo readiness guide.
 
-🟢 MVP Development In Progress
-✅ Day 1 Completed — Backend Setup & Database Connection
+## Honest Positioning
 
----
+Use this language for presentations:
 
-## 🧠 Vision
+> UniPortal is an institutional MVP focused on academic setup, student management, course registration, registrar approval, enrollment slips, and academic record foundations. It demonstrates the core academic registration workflow universities need before expanding into admissions, fees, timetables, lecturer portals, attendance, reporting, and full transcript processing.
 
-The goal of UniPortal is to create an affordable, scalable, and user-friendly academic portal tailored for universities and educational institutions, particularly in developing regions.
+Avoid presenting the current system as a complete production SIS. The current build is suitable for a live institutional MVP demo and early pilot discovery after environment, data, and security checks are completed.
 
-The platform will support:
+## Tech Stack
 
-* Student information management
-* Course registration
-* Academic results tracking
-* Administrative dashboards
-* Secure authentication & authorization
-* Multi-role access (Students, Admin, Staff)
+Backend:
 
----
+- Node.js
+- Express
+- MongoDB Atlas
+- Mongoose
+- JWT
+- bcryptjs
+- Helmet
+- Express rate limiting
 
-## 🏗️ Tech Stack
+Frontend:
 
-### Backend
+- React
+- Vite
+- React Router
+- Axios
+- React Hot Toast
+- CSS modules/global CSS in `client/src/index.css`
 
-* Node.js
-* Express.js
-* MongoDB Atlas
-* Mongoose
-* JWT Authentication
-* bcrypt (password hashing)
+## Project Structure
 
-### Frontend (Planned)
-
-* React.js
-* Tailwind CSS
-* Axios
-* React Router
-
-### Dev Tools
-
-* Nodemon
-* Git & GitHub
-* Postman / Thunder Client
-* dotenv
-
----
-
-## 📂 Project Structure
-
-```
+```text
 uniportal/
-│
-├── client/               # React frontend (planned)
-│
+├── client/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── app/routes/
+│   │   ├── components/
+│   │   └── features/
+│   ├── package.json
+│   └── vercel.json
 ├── server/
 │   ├── src/
 │   │   ├── app.js
 │   │   ├── server.js
+│   │   ├── controllers/
+│   │   ├── middlewares/
 │   │   ├── models/
 │   │   ├── routes/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   └── utils/
-│   │
-│   ├── config.env
-│   ├── package.json
-│   └── nodemon.json
-│
-└── README.md
+│   │   └── scripts/
+│   └── package.json
+└── docs/
 ```
 
----
+## Local Setup
 
-## ⚙️ Installation & Setup
-
-### 1️⃣ Clone Repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/uniportal.git
-cd uniportal/server
-```
-
-### 2️⃣ Install Dependencies
-
-```bash
-npm install
-```
-
-### 3️⃣ Create Environment File
-
-Create `config.env` in the server folder:
-
-```
-PORT=5000
-DATABASE=your_mongodb_connection_string
-DATABASE_PASSWORD=your_password
-JWT_SECRET=your_secret
-JWT_EXPIRES_IN=7d
-NODE_ENV=development
-```
-
-### 4️⃣ Run Development Server
-
-```bash
-npm run dev
-```
-
-Server will start on:
-
-```
-http://localhost:5000
-```
-
----
-
-## 🔌 API Endpoints (Current)
-
-### Health Check
-
-```
-GET /api/v1/health
-```
-
-### Authentication (Planned / In Progress)
-
-```
-POST /api/v1/auth/register
-POST /api/v1/auth/login
-```
-
----
-
-## 🔐 Security Features
-
-* Password hashing with bcrypt
-* JWT authentication
-* Environment variable protection
-* Role-based authorization (planned)
-
----
-
-## 📈 Roadmap
-
-### Phase 1 — Backend Foundation ✅
-
-* Express server setup
-* MongoDB connection
-* Environment configuration
-
-### Phase 2 — Authentication (Current)
-
-* User model
-* Register/Login
-* JWT protection
-
-### Phase 3 — Core Features
-
-* Student management
-* Course management
-* Enrollment system
-* Dashboard
-
-### Phase 4 — Frontend
-
-* React UI
-* Authentication pages
-* Admin panel
-
-### Phase 5 — Deployment
-
-* Cloud hosting
-* Production database
-* Domain configuration
-
----
-
-## 🌍 Target Users
-
-* Universities
-* Colleges
-* Training Institutes
-* Educational Organizations
-
----
-
-# UniPortal
-
-A MERN university management SaaS platform for students and admins.
-
-## Features
-
-- JWT authentication
-- Role-based access control
-- Course management
-- Student enrollment
-- Profile management
-- Dashboard UI
-- Session restore with `/auth/me`
-- Toast notifications
-- Form validation
-
-## Tech Stack
-
-- React
-- Vite
-- Node.js
-- Express
-- MongoDB
-- JWT
-
-## Setup
-
-### Backend
+Backend:
 
 ```bash
 cd server
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-### Frontend
+Frontend:
 
 ```bash
 cd client
 npm install
+cp .env.example .env.development
 npm run dev
 ```
 
-## Deployment
+Default local URLs:
 
-### Render Backend
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:5000/api/v1`
+- Backend health check: `http://localhost:5000/api/v1/health`
 
-Create a Render Web Service with:
+## Required Environment Variables
+
+Backend:
+
+```env
+NODE_ENV=development
+PORT=5000
+DATABASE=mongodb+srv://username:<PASSWORD>@cluster.mongodb.net/uniportal
+DATABASE_PASSWORD=only_required_if_DATABASE_contains_<PASSWORD>
+JWT_SECRET=replace_with_a_strong_secret
+JWT_EXPIRES_IN=7d
+CLIENT_URL=http://localhost:5173
+CORS_ORIGINS=
+```
+
+Frontend:
+
+```env
+VITE_API_URL=http://localhost:5000/api/v1
+```
+
+Never commit real `.env` or `config.env` files.
+
+## Demo Seed Data
+
+Run the institutional demo seed from the backend folder:
+
+```bash
+cd server
+npm run seed:demo
+```
+
+The seed creates or updates:
+
+- Demo admin and registrar accounts.
+- Sample student accounts.
+- Faculties, departments, and programs.
+- Courses.
+- Active and historical academic sessions.
+- Pending, approved, rejected, and correction-required enrollments.
+- Registrar decision audit history.
+- Academic records for approved enrollments.
+
+Passwords are generated or read from environment variables and printed in the terminal output. Do not hardcode demo passwords in frontend code or public docs.
+
+Optional seed password variables:
+
+```env
+DEMO_ADMIN_PASSWORD=
+DEMO_REGISTRAR_PASSWORD=
+DEMO_STUDENT_PASSWORD=
+```
+
+## Useful Scripts
+
+Backend:
+
+```bash
+cd server
+npm run dev
+npm start
+npm run seed:academic
+npm run seed:demo
+```
+
+Frontend:
+
+```bash
+cd client
+npm run dev
+npm run lint
+npm run build
+npm run preview
+```
+
+## Pre-Presentation Verification
+
+Run backend syntax/module checks:
+
+```bash
+cd server
+for f in src/controllers/*.js src/routes/*.js src/models/*.js src/middlewares/*.js src/scripts/*.js src/app.js src/server.js; do node --check "$f" || exit 1; done
+node -e "require('./src/app'); console.log('app loaded')"
+```
+
+Run frontend checks:
+
+```bash
+cd client
+npm run lint
+npm run build
+```
+
+Then run the live smoke test in `docs/demo-smoke-test.md`.
+
+## Render Backend Deployment
+
+Create a Render Web Service:
 
 - Root directory: `server`
 - Build command: `npm install`
 - Start command: `npm start`
 - Health check path: `/api/v1/health`
 
-Required backend environment variables:
+Required Render environment variables:
 
 ```env
 NODE_ENV=production
-PORT=10000
 DATABASE=your_mongodb_atlas_connection_string
 DATABASE_PASSWORD=only_required_if_DATABASE_contains_<PASSWORD>
 JWT_SECRET=your_strong_jwt_secret
 JWT_EXPIRES_IN=7d
 CLIENT_URL=https://your-vercel-app.vercel.app
+CORS_ORIGINS=
 ```
 
-`DATABASE` may be either a full MongoDB Atlas URI or a URI containing
-`<PASSWORD>`. If it contains `<PASSWORD>`, set `DATABASE_PASSWORD` separately.
-Do not commit real secret values.
+MongoDB Atlas must allow Render network access. If login or API requests fail with 502, check Render logs and Atlas network/database credentials first.
 
-`CLIENT_URL` is used for CORS. Use the exact Vercel origin, for example:
+## Vercel Frontend Deployment
 
-```env
-CLIENT_URL=https://uniportal-rho.vercel.app
-```
-
-Multiple origins can be provided as a comma-separated list. `CORS_ORIGINS` is
-also supported for additional comma-separated frontend origins.
-
-### Vercel Frontend
-
-Create a Vercel project with:
+Create a Vercel project:
 
 - Root directory: `client`
 - Build command: `npm run build`
 - Output directory: `dist`
 
-Required frontend environment variable:
+Required Vercel environment variable:
 
 ```env
 VITE_API_URL=https://your-render-service.onrender.com/api/v1
 ```
 
-The frontend includes `client/vercel.json` so React Router routes refresh to
-`index.html`.
+The deployed frontend must point to the Render API URL including `/api/v1`.
 
-After deployment, verify:
+## Live Demo Flow
 
-```text
-GET https://your-render-service.onrender.com/api/v1/health
-```
+Recommended presentation path:
 
-Then log in from the Vercel URL and confirm the browser network requests use
-the Render `/api/v1` base URL.
+1. Login as admin.
+2. Show dashboard KPIs and active academic session.
+3. Show demo readiness page.
+4. Show faculties, departments, programs, and courses.
+5. Show student management and student academic identity.
+6. Show course detail with enrollment counts.
+7. Switch to student and request/view enrollment.
+8. Switch to registrar and approve/reject/return an enrollment.
+9. Show registrar audit log.
+10. Return to student and show approved enrollment slip.
+11. Show academic records foundation.
 
----
+## Known Pilot Gaps
 
-## 👨‍💻 Author
+Recommended future modules after presentation:
 
-**Peter Jur Makender Makech**
-Full-Stack MERN Developer
-Founder — Sky High Tech
+- Reports and exports.
+- Admissions/intake management.
+- Lecturer portal and grade submission.
+- Timetable/scheduling.
+- Attendance.
+- Fees/payments.
+- Notifications and announcements.
+- Document uploads.
+- Password reset and stronger account lifecycle tools.
+- Broader audit logging for admin actions.
+
+## Documentation
+
+Key docs:
+
+- `docs/deployment-checklist.md`
+- `docs/demo-smoke-test.md`
+- `docs/uniportal-demo-user-manual.md`
+- `docs/mvp-demo-checklist.md`
+- `docs/student-profile-studentId-index-migration.md`
+
+## Author
+
+Peter Jur Makender Makech  
+Sky High Tech  
 Juba, South Sudan
 
----
+## License
 
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## ⭐ Future Goals
-
-* Multi-institution SaaS version
-* Mobile app integration
-* Payment integration
-* AI academic analytics
-
----
-
-## 🤝 Contributions
-
-Contributions, suggestions, and collaborations are welcome.
-
----
-
-## 📬 Contact
-
-For partnerships or inquiries:
-
-Email: pmakec@gmail.com
-Company: Sky High Tech
-
----
-
-> Building technology solutions for education in Africa 🚀
+MIT

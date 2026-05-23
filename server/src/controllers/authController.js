@@ -66,7 +66,12 @@ exports.register = async (req, res) => {
         .json({ status: "fail", message: "Email already registered" });
     }
 
-    res.status(400).json({ status: "fail", message: err.message });
+    const message =
+      process.env.NODE_ENV === "production"
+        ? "Registration failed. Please check your details."
+        : err.message;
+
+    res.status(400).json({ status: "fail", message });
   }
 };
 
@@ -121,7 +126,12 @@ exports.login = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({ status: "error", message: err.message });
+    const message =
+      process.env.NODE_ENV === "production"
+        ? "Login failed. Please try again."
+        : err.message;
+
+    res.status(500).json({ status: "error", message });
   }
 };
 
