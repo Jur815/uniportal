@@ -14,11 +14,15 @@ const modules = [
   ["Student profile and academic identity", "Ready"],
   ["Enrollment slip printing", "Ready"],
   ["Academic records foundation", "Pilot foundation"],
+  ["Finance, lecturer, and dean/HOD pilot dashboards", "Pilot foundation"],
 ];
 
 const accounts = [
   { role: "Admin", email: "admin@uniportal.demo" },
   { role: "Registrar", email: "registrar@uniportal.demo" },
+  { role: "Finance", email: "finance@uniportal.demo" },
+  { role: "Lecturer", email: "lecturer@uniportal.demo" },
+  { role: "Dean / HOD", email: "dean@uniportal.demo" },
   { role: "Student", email: "john.student@uniportal.demo" },
   { role: "Student", email: "amina.student@uniportal.demo" },
 ];
@@ -30,6 +34,7 @@ const demoSteps = [
   "Login as registrar and open the Registrar Dashboard.",
   "Review pending enrollments and open an enrollment detail record.",
   "Approve or return an enrollment and inspect the audit log.",
+  "Open finance, lecturer, and dean/HOD pilot dashboards.",
   "Login as student and review My Enrollments.",
   "Print an approved enrollment slip.",
   "Open Academic Records and review grades, GPA, and remarks.",
@@ -44,6 +49,7 @@ const seedTargets = [
   "Mixed enrollment decisions",
   "Historical sessions",
   "Registrar audit history",
+  "Pilot institutional role accounts",
 ];
 
 const riskChecks = [
