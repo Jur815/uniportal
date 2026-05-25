@@ -296,8 +296,8 @@ export default function DashboardPage() {
                 <div>
                   <h2>Future Institutional Modules</h2>
                   <p>
-                    Pilot phase previews for institutional offices planned
-                    beyond the current MVP.
+                    These modules are introduced in pilot form to demonstrate
+                    UniPortal's institutional expansion path.
                   </p>
                 </div>
               </div>
@@ -307,9 +307,9 @@ export default function DashboardPage() {
                   title="Finance Module"
                   pilotPath="/finance/dashboard"
                   items={[
-                    "Fee management",
-                    "Payment status",
+                    "Payment tracking",
                     "Financial clearance",
+                    "Fee management foundation",
                   ]}
                 />
                 <FutureModuleCard
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                   items={[
                     "Assigned courses",
                     "Student rosters",
-                    "Grade submission roadmap",
+                    "Grade submission workflow",
                   ]}
                 />
                 <FutureModuleCard
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                   items={[
                     "Department oversight",
                     "Enrollment analytics",
-                    "Approval oversight roadmap",
+                    "Academic approval visibility",
                   ]}
                 />
               </div>

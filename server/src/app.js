@@ -15,6 +15,9 @@ const studentRoutes = require("./routes/studentRoutes");
 const academicSessionRoutes = require("./routes/academicSessionRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const academicRecordRoutes = require("./routes/academicRecordRoutes");
+const complaintRoutes = require("./routes/complaintRoutes");
+const timetableRoutes = require("./routes/timetableRoutes");
+const examClearanceRoutes = require("./routes/examClearanceRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 
 
@@ -87,6 +90,9 @@ app.use("/api/v1/students", studentRoutes);
 app.use("/api/v1/academic-sessions", academicSessionRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/academic-records", academicRecordRoutes);
+app.use("/api/v1/complaints", complaintRoutes);
+app.use("/api/v1/timetable", timetableRoutes);
+app.use("/api/v1/exam-clearance", examClearanceRoutes);
 
 app.use(errorHandler);
 

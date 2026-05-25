@@ -13,6 +13,12 @@ import EnrollmentDetailPage from "../../features/enrollments/pages/EnrollmentDet
 import MyEnrollmentsPage from "../../features/enrollments/pages/MyEnrollmentsPage";
 import EnrollmentSlipPage from "../../features/enrollments/pages/EnrollmentSlipPage";
 import MyAcademicRecordsPage from "../../features/enrollments/pages/MyAcademicRecordsPage";
+import MyComplaintsPage from "../../features/complaints/pages/MyComplaintsPage";
+import AdminComplaintsPage from "../../features/complaints/pages/AdminComplaintsPage";
+import MyTimetablePage from "../../features/timetable/pages/MyTimetablePage";
+import AdminTimetablePage from "../../features/timetable/pages/AdminTimetablePage";
+import MyExamClearancePage from "../../features/exams/pages/MyExamClearancePage";
+import AdminExamClearancePage from "../../features/exams/pages/AdminExamClearancePage";
 import AcademicSetupPage from "../../features/admin/pages/AcademicSetupPage";
 import AdminCourseManagementPage from "../../features/admin/pages/AdminCourseManagementPage";
 import AdminCourseDetailPage from "../../features/admin/pages/AdminCourseDetailPage";
@@ -82,6 +88,18 @@ export const router = createBrowserRouter([
                 element: <MyAcademicRecordsPage />,
               },
               {
+                path: "my-complaints",
+                element: <MyComplaintsPage />,
+              },
+              {
+                path: "my-timetable",
+                element: <MyTimetablePage />,
+              },
+              {
+                path: "my-exam-clearance",
+                element: <MyExamClearancePage />,
+              },
+              {
                 path: "profile",
                 element: <StudentProfilePage />,
               },
@@ -105,6 +123,18 @@ export const router = createBrowserRouter([
               {
                 path: "admin/academic-records",
                 element: <AdminAcademicRecordsPage />,
+              },
+              {
+                path: "admin/complaints",
+                element: <AdminComplaintsPage />,
+              },
+              {
+                path: "admin/timetable",
+                element: <AdminTimetablePage />,
+              },
+              {
+                path: "admin/exam-clearance",
+                element: <AdminExamClearancePage />,
               },
               {
                 path: "admin/students/:studentId/academic-records",

@@ -337,7 +337,8 @@ a {
 }
 
 .form input,
-.form select {
+.form select,
+.form textarea {
   padding: 12px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -449,6 +450,108 @@ a {
   font: inherit;
   padding: 12px;
   width: 100%;
+}
+
+.complaint-form {
+  margin-bottom: 0;
+}
+
+.complaint-card-list {
+  display: grid;
+  gap: 16px;
+}
+
+.timetable-day-list {
+  display: grid;
+  gap: 16px;
+}
+
+.timetable-day-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.timetable-day-header h2 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.timetable-day-header span {
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.exam-clearance-card p {
+  color: #4b5563;
+  margin: 8px 0 0;
+}
+
+.complaint-card-header {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.complaint-card-header h2 {
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+
+.complaint-card-header p {
+  color: #4b5563;
+  margin: 0;
+}
+
+.complaint-meta {
+  color: #4b5563;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.complaint-meta span {
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 5px 9px;
+}
+
+.complaint-response-field {
+  color: #374151;
+  display: grid;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.complaint-response-field textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 12px;
+  width: 100%;
+}
+
+.eyebrow {
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.toolbar-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .page-header {
@@ -844,9 +947,31 @@ a {
   color: #166534;
 }
 
-.status-closed {
+.status-in_review {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-resolved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-eligible,
+.status-cleared {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-not_eligible,
+.status-not_cleared {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.status-closed {
+  background: #f3f4f6;
+  color: #374151;
 }
 
 .warning-badge {

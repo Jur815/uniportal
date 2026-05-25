@@ -50,6 +50,18 @@ export default function Sidebar() {
               Academic Records
             </NavLink>
 
+            <NavLink to="/my-complaints" className={getNavLinkClass}>
+              My Complaints
+            </NavLink>
+
+            <NavLink to="/my-timetable" className={getNavLinkClass}>
+              My Timetable
+            </NavLink>
+
+            <NavLink to="/my-exam-clearance" className={getNavLinkClass}>
+              Exam Clearance
+            </NavLink>
+
             <NavLink to="/profile" className={getNavLinkClass}>
               Profile
             </NavLink>
@@ -85,6 +97,15 @@ export default function Sidebar() {
             <NavLink to="/admin/academic-records" className={getNavLinkClass}>
               Academic Records
             </NavLink>
+            <NavLink to="/admin/complaints" className={getNavLinkClass}>
+              Complaints
+            </NavLink>
+            <NavLink to="/admin/timetable" className={getNavLinkClass}>
+              Timetable Management
+            </NavLink>
+            <NavLink to="/admin/exam-clearance" className={getNavLinkClass}>
+              Exam Clearance
+            </NavLink>
             <NavLink to="/admin/demo-readiness" className={getNavLinkClass}>
               Demo Readiness
             </NavLink>
@@ -107,6 +128,15 @@ export default function Sidebar() {
             </NavLink>
             <NavLink to="/admin/academic-records" className={getNavLinkClass}>
               Academic Records
+            </NavLink>
+            <NavLink to="/admin/complaints" className={getNavLinkClass}>
+              Complaints
+            </NavLink>
+            <NavLink to="/admin/timetable" className={getNavLinkClass}>
+              Timetable Management
+            </NavLink>
+            <NavLink to="/admin/exam-clearance" className={getNavLinkClass}>
+              Exam Clearance
             </NavLink>
           </>
         )}

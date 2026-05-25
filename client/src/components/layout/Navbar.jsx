@@ -47,6 +47,9 @@ export default function Navbar() {
                 <Link to="/my-courses">My Courses</Link>
                 <Link to="/my-enrollments">Enrollment Slips</Link>
                 <Link to="/my-academic-records">Academic Records</Link>
+                <Link to="/my-complaints">Complaints</Link>
+                <Link to="/my-timetable">Timetable</Link>
+                <Link to="/my-exam-clearance">Exam Clearance</Link>
               </>
             )}
 
@@ -61,6 +64,9 @@ export default function Navbar() {
                 <Link to="/admin/students">Students</Link>
                 <Link to="/admin/students/new">Create Student</Link>
                 <Link to="/admin/academic-records">Records</Link>
+                <Link to="/admin/complaints">Complaints</Link>
+                <Link to="/admin/timetable">Timetable</Link>
+                <Link to="/admin/exam-clearance">Exam Clearance</Link>
                 <Link to="/admin/demo-readiness">Demo Readiness</Link>
                 <Link to="/admin/courses/new">Create Course</Link>
                 <Link to="/admin/enrollments">Enrollments</Link>
@@ -72,6 +78,9 @@ export default function Navbar() {
                 <Link to="/registrar/dashboard">Registrar Dashboard</Link>
                 <Link to="/admin/enrollments">Enrollments</Link>
                 <Link to="/admin/academic-records">Records</Link>
+                <Link to="/admin/complaints">Complaints</Link>
+                <Link to="/admin/timetable">Timetable</Link>
+                <Link to="/admin/exam-clearance">Exam Clearance</Link>
               </>
             )}
 
