@@ -290,6 +290,50 @@ export default function DashboardPage() {
             )}
           </div>
 
+          {isAdmin && (
+            <div className="card">
+              <div className="review-toolbar">
+                <div>
+                  <h2>Future Institutional Modules</h2>
+                  <p>
+                    Pilot phase previews for institutional offices planned
+                    beyond the current MVP.
+                  </p>
+                </div>
+              </div>
+
+              <div className="command-grid">
+                <FutureModuleCard
+                  title="Finance Module"
+                  pilotPath="/finance/dashboard"
+                  items={[
+                    "Fee management",
+                    "Payment status",
+                    "Financial clearance",
+                  ]}
+                />
+                <FutureModuleCard
+                  title="Lecturer Module"
+                  pilotPath="/lecturer/dashboard"
+                  items={[
+                    "Assigned courses",
+                    "Student rosters",
+                    "Grade submission roadmap",
+                  ]}
+                />
+                <FutureModuleCard
+                  title="Dean/HOD Module"
+                  pilotPath="/dean/dashboard"
+                  items={[
+                    "Department oversight",
+                    "Enrollment analytics",
+                    "Approval oversight roadmap",
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="course-detail-grid">
             <RecentEnrollmentsTable
               enrollments={kpis?.recentActivity?.latestEnrollments || []}
@@ -342,6 +386,28 @@ function DashboardMetric({ label, value }) {
     <div className="metric-card">
       <span>{label}</span>
       <strong>{value ?? "..."}</strong>
+    </div>
+  );
+}
+
+function FutureModuleCard({ title, pilotPath, items }) {
+  return (
+    <div className="command-card">
+      <span>Pilot phase</span>
+      <h2>{title}</h2>
+      <div className="detail-list">
+        {items.map((item) => (
+          <p key={item}>{item}</p>
+        ))}
+      </div>
+      <button
+        className="btn btn-outline"
+        type="button"
+        disabled
+        title={`${pilotPath} is protected for its assigned pilot role.`}
+      >
+        Pilot dashboard protected
+      </button>
     </div>
   );
 }
