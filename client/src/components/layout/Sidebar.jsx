@@ -9,6 +9,12 @@ export default function Sidebar() {
 
   const getNavLinkClass = ({ isActive }) =>
     isActive ? "sidebar-link active" : "sidebar-link";
+  const pilotDashboardByRole = {
+    finance: "/finance/dashboard",
+    lecturer: "/lecturer/dashboard",
+    dean_hod: "/dean/dashboard",
+  };
+  const pilotDashboard = pilotDashboardByRole[user.role];
 
   return (
     <aside className="sidebar">
@@ -22,7 +28,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar-nav" aria-label="Sidebar navigation">
-        <NavLink to="/dashboard" className={getNavLinkClass}>
+        <NavLink to={pilotDashboard || "/dashboard"} className={getNavLinkClass}>
           Dashboard
         </NavLink>
 

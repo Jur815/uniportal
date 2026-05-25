@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { getAdminDashboardKpis } from "../../../api/admin.api";
 import { useAuth } from "../../auth/context/useAuth";
 
@@ -10,6 +10,11 @@ export default function DashboardPage() {
   const isAdmin = user?.role === "admin";
   const isRegistrar = user?.role === "registrar";
   const isStudent = user?.role === "student";
+  const pilotRoleDashboard = {
+    finance: "/finance/dashboard",
+    lecturer: "/lecturer/dashboard",
+    dean_hod: "/dean/dashboard",
+  }[user?.role];
   const enrollmentTotal = Number(kpis?.totalEnrollments || 0);
   const approvedTotal = Number(kpis?.approvedEnrollments || 0);
   const approvalRate =
@@ -38,6 +43,10 @@ export default function DashboardPage() {
         <p className="text-gray-600">Loading dashboard...</p>
       </div>
     );
+  }
+
+  if (pilotRoleDashboard) {
+    return <Navigate to={pilotRoleDashboard} replace />;
   }
 
   return (

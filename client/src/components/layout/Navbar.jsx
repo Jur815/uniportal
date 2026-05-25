@@ -4,6 +4,12 @@ import { useAuth } from "../../features/auth/context/useAuth";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const pilotDashboardByRole = {
+    finance: "/finance/dashboard",
+    lecturer: "/lecturer/dashboard",
+    dean_hod: "/dean/dashboard",
+  };
+  const pilotDashboard = user ? pilotDashboardByRole[user.role] : null;
 
   const handleLogout = async () => {
     try {
@@ -17,7 +23,10 @@ export default function Navbar() {
     <header className="navbar">
       <div className="navbar-left">
         <div className="navbar-brand">
-          <Link to={user ? "/dashboard" : "/"} className="navbar-brand-text">
+          <Link
+            to={user ? pilotDashboard || "/dashboard" : "/"}
+            className="navbar-brand-text"
+          >
             <img
               src="/branding/uniportal-mark.svg"
               alt=""
@@ -64,6 +73,10 @@ export default function Navbar() {
                 <Link to="/admin/enrollments">Enrollments</Link>
                 <Link to="/admin/academic-records">Records</Link>
               </>
+            )}
+
+            {pilotDashboard && (
+              <Link to={pilotDashboard}>Pilot Dashboard</Link>
             )}
           </nav>
         )} 

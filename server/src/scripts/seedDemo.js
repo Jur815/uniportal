@@ -68,6 +68,27 @@ const adminAccounts = [
   },
 ];
 
+const institutionalRoleAccounts = [
+  {
+    name: "Demo Finance Officer",
+    email: "finance@uniportal.demo",
+    password: getDemoPassword("DEMO_FINANCE_PASSWORD"),
+    role: "finance",
+  },
+  {
+    name: "Demo Lecturer",
+    email: "lecturer@uniportal.demo",
+    password: getDemoPassword("DEMO_LECTURER_PASSWORD"),
+    role: "lecturer",
+  },
+  {
+    name: "Demo Dean / HOD",
+    email: "dean@uniportal.demo",
+    password: getDemoPassword("DEMO_DEAN_PASSWORD"),
+    role: "dean_hod",
+  },
+];
+
 const studentSeed = [
   ["John Garang", "john.student@uniportal.demo", "UP-2026-0001", "REG-2026-CS-001", "BSC-CS", 1],
   ["Amina Deng", "amina.student@uniportal.demo", "UP-2026-0002", "REG-2026-IT-002", "BSC-IT", 1],
@@ -474,7 +495,7 @@ const seedDemo = async () => {
   await mongoose.connect(DB);
 
   const accounts = {};
-  for (const account of adminAccounts) {
+  for (const account of [...adminAccounts, ...institutionalRoleAccounts]) {
     accounts[account.email] = await ensureUser(account);
   }
 
@@ -574,6 +595,10 @@ const seedDemo = async () => {
   console.log("UniPortal institutional demo seed completed successfully.");
   console.log("\nPrimary demo accounts:");
   for (const account of adminAccounts) {
+    console.log(`${account.role}: ${account.email} / ${account.password}`);
+  }
+  console.log("\nPilot institutional role accounts:");
+  for (const account of institutionalRoleAccounts) {
     console.log(`${account.role}: ${account.email} / ${account.password}`);
   }
   console.log(`student: john.student@uniportal.demo / ${studentPassword}`);

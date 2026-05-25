@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import LoginPage from "../../features/auth/pages/LoginPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import RegistrarDashboardPage from "../../features/dashboard/pages/RegistrarDashboardPage";
+import InstitutionalRoleDashboardPage from "../../features/dashboard/pages/InstitutionalRoleDashboardPage";
 import CoursesPage from "../../features/courses/pages/CoursesPage";
 import MyCoursesPage from "../../features/courses/pages/MyCoursesPage";
 import CreateCoursePage from "../../features/courses/pages/CreateCoursePage";
@@ -108,6 +109,33 @@ export const router = createBrowserRouter([
               {
                 path: "admin/students/:studentId/academic-records",
                 element: <AdminAcademicRecordsPage />,
+              },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={["finance"]} />,
+            children: [
+              {
+                path: "finance/dashboard",
+                element: <InstitutionalRoleDashboardPage role="finance" />,
+              },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={["lecturer"]} />,
+            children: [
+              {
+                path: "lecturer/dashboard",
+                element: <InstitutionalRoleDashboardPage role="lecturer" />,
+              },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={["dean_hod"]} />,
+            children: [
+              {
+                path: "dean/dashboard",
+                element: <InstitutionalRoleDashboardPage role="dean_hod" />,
               },
             ],
           },
