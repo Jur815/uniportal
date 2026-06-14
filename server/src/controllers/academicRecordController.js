@@ -87,7 +87,13 @@ exports.getRecords = async (req, res) => {
 };
 
 exports.getMyRecords = async (req, res) => {
-  const records = await AcademicRecord.find({ student: req.user._id })
+  const records = await AcademicRecord.find({
+    student: req.user._id,
+    $or: [
+      { workflowStatus: "released" },
+      { gradingPolicy: { $exists: false } },
+    ],
+  })
     .populate(recordPopulate)
     .sort({ academicYear: -1, semester: -1, createdAt: -1 });
   const enrichedRecords = await enrichRecords(records);
@@ -133,13 +139,41 @@ exports.generateFromEnrollment = async (req, res) => {
     });
   }
 
-  const courses = enrollment.courses.map((course) => ({
+  const enrolledCourses = enrollment.courses.map((course) => ({
     course: course._id,
     code: course.code,
     title: course.title,
     creditHours: Number(course.creditHours || 0),
     status: "in-progress",
   }));
+  const previousRecords = await AcademicRecord.find({
+    student: student._id,
+    "courses.status": "failed",
+  }).sort({ academicYear: -1, semester: -1 });
+  const enrolledCourseIds = new Set(
+    enrolledCourses.map((course) => String(course.course)),
+  );
+  const carryOverMap = new Map();
+  for (const previousRecord of previousRecords) {
+    for (const previousCourse of previousRecord.courses) {
+      if (
+        previousCourse.status === "failed" &&
+        !enrolledCourseIds.has(String(previousCourse.course)) &&
+        !carryOverMap.has(String(previousCourse.course))
+      ) {
+        carryOverMap.set(String(previousCourse.course), {
+          course: previousCourse.course,
+          code: previousCourse.code,
+          title: previousCourse.title,
+          creditHours: previousCourse.creditHours,
+          status: "in-progress",
+          isCarryOver: true,
+          attemptNumber: Number(previousCourse.attemptNumber || 1) + 1,
+        });
+      }
+    }
+  }
+  const courses = [...enrolledCourses, ...carryOverMap.values()];
 
   let record = await AcademicRecord.findOne({ enrollment: enrollment._id });
   let created = false;

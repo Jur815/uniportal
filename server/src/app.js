@@ -18,6 +18,7 @@ const academicRecordRoutes = require("./routes/academicRecordRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
 const timetableRoutes = require("./routes/timetableRoutes");
 const examClearanceRoutes = require("./routes/examClearanceRoutes");
+const examinationRoutes = require("./routes/examinationRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 
 
@@ -78,7 +79,9 @@ app.get("/api/v1/health", (req, res) => {
   });
 });
 
-app.use("/api/v1/auth", authLimiter, authRoutes);
+app.use("/api/v1/auth/login", authLimiter);
+app.use("/api/v1/auth/register", authLimiter);
+app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/enrollments", enrollmentRoutes);
@@ -93,6 +96,7 @@ app.use("/api/v1/academic-records", academicRecordRoutes);
 app.use("/api/v1/complaints", complaintRoutes);
 app.use("/api/v1/timetable", timetableRoutes);
 app.use("/api/v1/exam-clearance", examClearanceRoutes);
+app.use("/api/v1/examinations", examinationRoutes);
 
 app.use(errorHandler);
 

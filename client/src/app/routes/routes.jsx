@@ -29,6 +29,8 @@ import AdminDemoReadinessPage from "../../features/admin/pages/AdminDemoReadines
 import AcademicSessionsPage from "../../features/admin/pages/AcademicSessionsPage";
 import AdminFacultiesPage from "../../features/admin/pages/AdminFacultiesPage";
 import AdminDepartmentsPage from "../../features/admin/pages/AdminDepartmentsPage";
+import ExaminationManagementPage from "../../features/examinations/pages/ExaminationManagementPage";
+import MyReleasedResultsPage from "../../features/examinations/pages/MyReleasedResultsPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -86,6 +88,10 @@ export const router = createBrowserRouter([
               {
                 path: "my-academic-records",
                 element: <MyAcademicRecordsPage />,
+              },
+              {
+                path: "my-results",
+                element: <MyReleasedResultsPage />,
               },
               {
                 path: "my-complaints",
@@ -211,6 +217,19 @@ export const router = createBrowserRouter([
               {
                 path: "admin/courses/new",
                 element: <CreateCoursePage />,
+              },
+            ],
+          },
+          {
+            element: (
+              <ProtectedRoute
+                allowedRoles={["admin", "registrar", "lecturer", "dean_hod"]}
+              />
+            ),
+            children: [
+              {
+                path: "examinations",
+                element: <ExaminationManagementPage />,
               },
             ],
           },

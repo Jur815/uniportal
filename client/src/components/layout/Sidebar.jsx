@@ -49,6 +49,9 @@ export default function Sidebar() {
             <NavLink to="/my-academic-records" className={getNavLinkClass}>
               Academic Records
             </NavLink>
+            <NavLink to="/my-results" className={getNavLinkClass}>
+              Released Results
+            </NavLink>
 
             <NavLink to="/my-complaints" className={getNavLinkClass}>
               My Complaints
@@ -97,6 +100,9 @@ export default function Sidebar() {
             <NavLink to="/admin/academic-records" className={getNavLinkClass}>
               Academic Records
             </NavLink>
+            <NavLink to="/examinations" className={getNavLinkClass}>
+              Examinations & Progression
+            </NavLink>
             <NavLink to="/admin/complaints" className={getNavLinkClass}>
               Complaints
             </NavLink>
@@ -129,6 +135,9 @@ export default function Sidebar() {
             <NavLink to="/admin/academic-records" className={getNavLinkClass}>
               Academic Records
             </NavLink>
+            <NavLink to="/examinations" className={getNavLinkClass}>
+              Examinations & Progression
+            </NavLink>
             <NavLink to="/admin/complaints" className={getNavLinkClass}>
               Complaints
             </NavLink>
@@ -139,6 +148,12 @@ export default function Sidebar() {
               Exam Clearance
             </NavLink>
           </>
+        )}
+
+        {["lecturer", "dean_hod"].includes(user.role) && (
+          <NavLink to="/examinations" className={getNavLinkClass}>
+            Examinations & Progression
+          </NavLink>
         )}
       </nav>
     </aside>

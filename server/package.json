@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "test": "node --test src/**/*.test.js",
+    "backup:demo": "node src/scripts/backupDemoDatabase.js",
     "seed:academic": "node src/scripts/seedAcademic.js",
     "seed:demo": "node src/scripts/seedDemo.js"
   },

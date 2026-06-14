@@ -267,6 +267,16 @@ export default function DashboardPage() {
               </Link>
             </div>
 
+            <div className="command-card command-card-highlight">
+              <span>Academic Progression</span>
+              <h2>Examinations</h2>
+              <p>
+                Review marks, progression outcomes, approval status, and
+                released-result reports.
+              </p>
+              <Link to="/examinations">Open Examination Dashboard</Link>
+            </div>
+
             {isAdmin && (
               <div className="command-card">
                 <span>Calendar</span>

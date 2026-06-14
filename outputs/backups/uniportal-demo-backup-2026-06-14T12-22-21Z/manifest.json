@@ -1,0 +1,77 @@
+{
+  "backupName": "uniportal-demo-backup-2026-06-14T12-22-21Z",
+  "createdAt": "2026-06-14T12:22:30.436Z",
+  "source": {
+    "host": "uniportal-cluster.kfv0ozc.mongodb.net",
+    "database": "uniportal"
+  },
+  "format": "MongoDB Extended JSON v2 (canonical)",
+  "collections": [
+    {
+      "collection": "academicrecords",
+      "documents": 34,
+      "filename": "academicrecords.json"
+    },
+    {
+      "collection": "academicsessions",
+      "documents": 3,
+      "filename": "academicsessions.json"
+    },
+    {
+      "collection": "complaints",
+      "documents": 2,
+      "filename": "complaints.json"
+    },
+    {
+      "collection": "courses",
+      "documents": 43,
+      "filename": "courses.json"
+    },
+    {
+      "collection": "departments",
+      "documents": 11,
+      "filename": "departments.json"
+    },
+    {
+      "collection": "enrollments",
+      "documents": 44,
+      "filename": "enrollments.json"
+    },
+    {
+      "collection": "examclearances",
+      "documents": 1,
+      "filename": "examclearances.json"
+    },
+    {
+      "collection": "faculties",
+      "documents": 3,
+      "filename": "faculties.json"
+    },
+    {
+      "collection": "gradingpolicies",
+      "documents": 1,
+      "filename": "gradingpolicies.json"
+    },
+    {
+      "collection": "programs",
+      "documents": 10,
+      "filename": "programs.json"
+    },
+    {
+      "collection": "studentprofiles",
+      "documents": 31,
+      "filename": "studentprofiles.json"
+    },
+    {
+      "collection": "timetableentries",
+      "documents": 0,
+      "filename": "timetableentries.json"
+    },
+    {
+      "collection": "users",
+      "documents": 36,
+      "filename": "users.json"
+    }
+  ],
+  "totalDocuments": 219
+}

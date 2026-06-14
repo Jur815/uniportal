@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const roleDashboards = {
   finance: {
@@ -27,15 +28,16 @@ const roleDashboards = {
     overview: [
       ["Assigned Courses", "Pilot placeholder", "Future list of course sections assigned to the lecturer."],
       ["Student Roster", "Concept", "Planned class roster visibility linked to approved enrollment."],
-      ["Grade Submission", "Roadmap", "Future controlled workflow for marks entry and review."],
+      ["Grade Submission", "Demonstrable", "Controlled marks entry for approved enrolled students."],
     ],
     modules: [
       "Assigned courses placeholder",
       "Student roster placeholder",
-      "Grade submission roadmap",
+      "Course marks entry and submission",
     ],
     message:
-      "Lecturer access is intentionally read-only and conceptual for this demo. No grading implementation is enabled.",
+      "Lecturers can enter and submit marks for review. They cannot review, finalize, or release institutional results.",
+    examinationAccess: true,
   },
   dean_hod: {
     kicker: "Dean / HOD Oversight",
@@ -44,16 +46,17 @@ const roleDashboards = {
       "A pilot oversight view for department-level enrollment, approval visibility, and academic analytics.",
     overview: [
       ["Enrollment Overview", "Pilot placeholder", "Future department-level enrollment summary by program and level."],
-      ["Approval Oversight", "Roadmap", "Planned visibility for policy exceptions and approval progress."],
+      ["Approval Oversight", "Demonstrable", "Review submitted results and return exceptions for correction."],
       ["Analytics", "Concept", "Future department analytics for academic planning and reporting."],
     ],
     modules: [
       "Department enrollment overview placeholder",
-      "Approval oversight roadmap",
+      "Dean/HOD result review",
       "Department analytics concept",
     ],
     message:
-      "Dean and HOD access is a pilot planning surface. It does not alter registrar approval rules or student records.",
+      "Dean/HOD users can review or return lecturer submissions. Final approval and result release remain Registrar or Administrator responsibilities.",
+    examinationAccess: true,
   },
 };
 
@@ -71,6 +74,11 @@ export default function InstitutionalRoleDashboardPage({ role }) {
           <h1>{dashboard.title}</h1>
           <p>{dashboard.subtitle}</p>
         </div>
+        {dashboard.examinationAccess && (
+          <Link className="btn btn-light" to="/examinations">
+            Open Examination Workspace
+          </Link>
+        )}
       </div>
 
       <div className="dashboard-strip">
@@ -80,11 +88,15 @@ export default function InstitutionalRoleDashboardPage({ role }) {
         </div>
         <div>
           <span>Operational Risk</span>
-          <strong>Read-only concept</strong>
+          <strong>
+            {dashboard.examinationAccess
+              ? "Role-controlled workflow"
+              : "Read-only concept"}
+          </strong>
         </div>
         <div>
           <span>MVP Stability</span>
-          <strong>No business logic changes</strong>
+          <strong>Controlled pilot scope</strong>
         </div>
       </div>
 
@@ -120,9 +132,9 @@ export default function InstitutionalRoleDashboardPage({ role }) {
       <div className="insight-panel">
         <h2>Controlled Expansion Path</h2>
         <p>
-          UniPortal can represent institutional offices beyond the current MVP
-          while keeping live enrollment, records, and administration workflows
-          stable for the Saturday presentation.
+          UniPortal demonstrates a controlled examination workflow while
+          keeping enrollment, academic records, and administration services
+          stable for institutional review.
         </p>
       </div>
     </div>

@@ -5,13 +5,21 @@ const path = require("path");
 
 const AcademicRecord = require("../models/AcademicRecord");
 const AcademicSession = require("../models/AcademicSession");
+const Complaint = require("../models/Complaint");
 const Course = require("../models/Course");
 const Department = require("../models/departmentModel");
 const Enrollment = require("../models/Enrollment");
+const ExamClearance = require("../models/ExamClearance");
 const Faculty = require("../models/facultyModel");
+const GradingPolicy = require("../models/GradingPolicy");
 const Program = require("../models/programModel");
 const StudentProfile = require("../models/StudentProfile");
+const TimetableEntry = require("../models/TimetableEntry");
 const User = require("../models/User");
+const {
+  calculateSemesterResult,
+  getPolicySnapshot,
+} = require("../services/resultCalculationService");
 
 dotenv.config({ path: path.join(__dirname, "..", "..", "config.env") });
 dotenv.config({ path: path.join(__dirname, "..", "..", ".env") });
@@ -37,6 +45,32 @@ const DB = process.env.DATABASE.includes("<PASSWORD>")
       encodeURIComponent(process.env.DATABASE_PASSWORD),
     )
   : process.env.DATABASE;
+
+const assertDemoDatabaseResetIsAuthorized = () => {
+  let target;
+  try {
+    target = new URL(DB);
+  } catch {
+    throw new Error("DATABASE must be a valid MongoDB connection URL.");
+  }
+
+  const localHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  const databaseName = target.pathname.replace(/^\//, "");
+  const confirmation = `RESET:${target.hostname}/${databaseName}`;
+  const remoteResetConfirmed =
+    process.env.CONFIRM_DEMO_DATABASE_RESET === confirmation;
+  const localDemoDatabase =
+    localHosts.has(target.hostname) && databaseName === "uniportal";
+
+  if (
+    databaseName !== "uniportal" ||
+    (!localDemoDatabase && !remoteResetConfirmed)
+  ) {
+    throw new Error(
+      `Refusing database reset. For this configured demo database, set CONFIRM_DEMO_DATABASE_RESET=${confirmation}.`,
+    );
+  }
+};
 
 const generatedPasswords = new Map();
 
@@ -114,6 +148,12 @@ const studentSeed = [
   ["Paulino Lual", "paulino.student@uniportal.demo", "UP-2024-0022", "REG-2024-ACC-022", "BBA-ACC", 3],
   ["Agnes Kiden", "agnes.student@uniportal.demo", "UP-2026-0023", "REG-2026-MED-023", "BSC-MEDLAB", 1],
   ["Stephen Malual", "stephen.student@uniportal.demo", "UP-2025-0024", "REG-2025-ECON-024", "BA-ECON", 2],
+  ["Bol Mading", "bol.cs@uniportal.demo", "UP-2025-CS25", "REG-2025-CS-025", "BSC-CS", 1],
+  ["Nyabuay Gatluak", "nyabuay.cs@uniportal.demo", "UP-2025-CS26", "REG-2025-CS-026", "BSC-CS", 1],
+  ["James Loku", "james.cs@uniportal.demo", "UP-2025-CS27", "REG-2025-CS-027", "BSC-CS", 1],
+  ["Adut Akech", "adut.cs@uniportal.demo", "UP-2025-CS28", "REG-2025-CS-028", "BSC-CS", 1],
+  ["Morris Wani", "morris.cs@uniportal.demo", "UP-2025-CS29", "REG-2025-CS-029", "BSC-CS", 1],
+  ["Rebecca Deng", "rebecca.cs@uniportal.demo", "UP-2025-CS30", "REG-2025-CS-030", "BSC-CS", 1],
 ];
 
 const faculties = [
@@ -151,6 +191,10 @@ const programs = [
 const courseSeed = [
   ["CSC101", "Introduction to Computer Science", 3, 1, 1, "BSC-CS"],
   ["CSC102", "Programming Fundamentals", 3, 1, 1, "BSC-CS"],
+  ["CSC103", "Discrete Mathematics", 3, 1, 1, "BSC-CS"],
+  ["CSC104", "Computer Systems Fundamentals", 3, 1, 1, "BSC-CS"],
+  ["CSC105", "Mathematics for Computing", 3, 1, 1, "BSC-CS"],
+  ["CSC106", "Academic Communication for Computing", 3, 1, 1, "BSC-CS"],
   ["CSC201", "Data Structures and Algorithms", 4, 1, 2, "BSC-CS"],
   ["CSC301", "Database Systems", 3, 1, 3, "BSC-CS"],
   ["CSC302", "Operating Systems", 3, 1, 3, "BSC-CS"],
@@ -200,6 +244,80 @@ const historicalCourseCodes = [
   "ECO101",
   "ENG101",
 ];
+
+const examinationDemoCohort = [
+  {
+    email: "bol.cs@uniportal.demo",
+    standing: "Pass",
+    marks: [78, 72, 68, 65, 61, 58],
+    workflowStatus: "released",
+  },
+  {
+    email: "nyabuay.cs@uniportal.demo",
+    standing: "Supplementary",
+    marks: [75, 68, 62, 58, 55, 45],
+    workflowStatus: "released",
+  },
+  {
+    email: "james.cs@uniportal.demo",
+    standing: "Carry Over",
+    marks: [78, 72, 68, 55, 45, 42],
+    workflowStatus: "released",
+  },
+  {
+    email: "adut.cs@uniportal.demo",
+    standing: "Repeat",
+    marks: [85, 82, 45, 40, 35, 30],
+    workflowStatus: "released",
+  },
+  {
+    email: "morris.cs@uniportal.demo",
+    standing: "Discontinued",
+    marks: [45, 42, 38, 35, 30, 25],
+    workflowStatus: "released",
+  },
+  {
+    email: "rebecca.cs@uniportal.demo",
+    standing: "Pass",
+    marks: [81, 76, 69, 64, 60, 56],
+    workflowStatus: "dean_hod_reviewed",
+  },
+];
+
+const examinationCourseCodes = [
+  "CSC101",
+  "CSC102",
+  "CSC103",
+  "CSC104",
+  "CSC105",
+  "CSC106",
+];
+
+const resetDemoDatabase = async () => {
+  const collections = [
+    AcademicRecord,
+    Enrollment,
+    Complaint,
+    ExamClearance,
+    TimetableEntry,
+    StudentProfile,
+    GradingPolicy,
+    Course,
+    Program,
+    Department,
+    Faculty,
+    AcademicSession,
+    User,
+  ];
+  const removed = {};
+
+  for (const Model of collections) {
+    const result = await Model.deleteMany({});
+    removed[Model.collection.collectionName] = result.deletedCount;
+  }
+
+  return removed;
+};
 
 const ensureUser = async ({ name, email, password, role }) => {
   let user = await User.findOne({ email });
@@ -475,6 +593,383 @@ const upsertAcademicRecord = async (enrollment, courses, index = 0) => {
   );
 };
 
+const upsertDemoGradingPolicy = async (admin) => {
+  await GradingPolicy.updateMany(
+    { isActive: true },
+    { $set: { isActive: false, updatedBy: admin._id } },
+  );
+  return GradingPolicy.findOneAndUpdate(
+    { name: "Demo Policy - configurable per institution" },
+    {
+      name: "Demo Policy - configurable per institution",
+      isActive: true,
+      gradeBands: [
+        { minMark: 80, maxMark: 100, grade: "A", gradePoint: 4, isPass: true },
+        { minMark: 70, maxMark: 79.99, grade: "B", gradePoint: 3, isPass: true },
+        { minMark: 60, maxMark: 69.99, grade: "C", gradePoint: 2, isPass: true },
+        { minMark: 50, maxMark: 59.99, grade: "D", gradePoint: 1, isPass: true },
+        { minMark: 0, maxMark: 49.99, grade: "F", gradePoint: 0, isPass: false },
+      ],
+      promotionRules: {
+        failedCourseThreshold: 1,
+        carryOverThreshold: 2,
+        repeatFailedCourseThreshold: 4,
+        discontinueFailedCourseThreshold: 6,
+        minimumGpa: 2,
+        repeatGpaThreshold: 1.5,
+        discontinueGpaThreshold: 1,
+        minimumEarnedCredits: 12,
+      },
+      createdBy: admin._id,
+      updatedBy: admin._id,
+    },
+    { returnDocument: "after", upsert: true, runValidators: true },
+  );
+};
+
+const buildResultAudit = ({
+  courses,
+  lecturer,
+  dean,
+  registrar,
+  workflowStatus,
+  timestamp,
+}) => {
+  const auditLog = courses.map((course) => ({
+    action: "marks_updated",
+    actor: lecturer._id,
+    actorRole: lecturer.role,
+    occurredAt: timestamp,
+    course: course.course,
+    previousValue: {},
+    newValue: {
+      marks: course.marks,
+      grade: course.grade,
+      gradePoint: course.gradePoint,
+      status: course.status,
+    },
+    note: "Seeded Computer Science marks for institutional demonstration.",
+  }));
+  auditLog.push(
+    {
+      action: "workflow_submit",
+      actor: lecturer._id,
+      actorRole: lecturer.role,
+      occurredAt: timestamp,
+      previousValue: { workflowStatus: "draft" },
+      newValue: { workflowStatus: "lecturer_submitted" },
+      note: "Lecturer submitted complete course marks.",
+    },
+    {
+      action: "workflow_review",
+      actor: dean._id,
+      actorRole: dean.role,
+      occurredAt: timestamp,
+      previousValue: { workflowStatus: "lecturer_submitted" },
+      newValue: { workflowStatus: "dean_hod_reviewed" },
+      note: "Dean/HOD reviewed the semester result.",
+    },
+  );
+
+  if (["registrar_finalized", "released"].includes(workflowStatus)) {
+    auditLog.push({
+      action: "workflow_finalize",
+      actor: registrar._id,
+      actorRole: registrar.role,
+      occurredAt: timestamp,
+      previousValue: { workflowStatus: "dean_hod_reviewed" },
+      newValue: { workflowStatus: "registrar_finalized" },
+      note: "Registrar approved the academic standing.",
+    });
+  }
+  if (workflowStatus === "released") {
+    auditLog.push({
+      action: "workflow_release",
+      actor: registrar._id,
+      actorRole: registrar.role,
+      occurredAt: timestamp,
+      previousValue: { workflowStatus: "registrar_finalized" },
+      newValue: { workflowStatus: "released" },
+      note: "Registrar released the result to the student portal.",
+    });
+  }
+  return auditLog;
+};
+
+const seedExaminationDemo = async ({
+  accounts,
+  courses,
+  policy,
+  registrar,
+}) => {
+  const lecturer = accounts["lecturer@uniportal.demo"];
+  const dean = accounts["dean@uniportal.demo"];
+  const csCourses = examinationCourseCodes.map((code) => courses[code]);
+  const timestamp = new Date("2026-06-01T09:00:00.000Z");
+
+  for (const item of examinationDemoCohort) {
+    const student = accounts[item.email];
+    const enrollment = await upsertEnrollment({
+      student,
+      courses: csCourses,
+      status: "approved",
+      registrar,
+      academicYear: "2025/2026",
+      semester: 2,
+    });
+    const baseCourses = csCourses.map((course, index) => ({
+      course: course._id,
+      code: course.code,
+      title: course.title,
+      creditHours: course.creditHours,
+      marks: item.marks[index],
+      attemptNumber: 1,
+    }));
+    const calculated = calculateSemesterResult(baseCourses, policy);
+    if (calculated.academicStanding !== item.standing) {
+      throw new Error(
+        `${item.email} expected ${item.standing}, calculated ${calculated.academicStanding}`,
+      );
+    }
+    const isReleased = item.workflowStatus === "released";
+    const update = {
+      student: student._id,
+      enrollment: enrollment._id,
+      academicYear: enrollment.academicYear,
+      semester: enrollment.semester,
+      courses: calculated.courses,
+      totalCredits: csCourses.reduce(
+        (sum, course) => sum + Number(course.creditHours),
+        0,
+      ),
+      GPA: calculated.GPA,
+      CGPA: calculated.GPA,
+      earnedCredits: calculated.earnedCredits,
+      failedCourseCount: calculated.failedCourseCount,
+      academicStanding: item.standing,
+      workflowStatus: item.workflowStatus,
+      gradingPolicy: policy._id,
+      gradingPolicySnapshot: getPolicySnapshot(policy),
+      submittedBy: lecturer._id,
+      submittedAt: timestamp,
+      reviewedBy: dean._id,
+      reviewedAt: timestamp,
+      finalizedBy: isReleased ? registrar._id : undefined,
+      finalizedAt: isReleased ? timestamp : undefined,
+      releasedBy: isReleased ? registrar._id : undefined,
+      releasedAt: isReleased ? timestamp : undefined,
+      approvalNote: isReleased
+        ? "Released Computer Science result for institutional demo."
+        : "Reviewed result intentionally not released for visibility testing.",
+      remarks: `${item.standing} demonstration record.`,
+      auditLog: buildResultAudit({
+        courses: calculated.courses,
+        lecturer,
+        dean,
+        registrar,
+        workflowStatus: item.workflowStatus,
+        timestamp,
+      }),
+    };
+    await AcademicRecord.findOneAndUpdate(
+      { enrollment: enrollment._id },
+      update,
+      { returnDocument: "after", upsert: true, runValidators: true },
+    );
+  }
+};
+
+const seedTimetableDemo = async ({ courses, structure }) => {
+  const computingFaculty = structure.facultyByCode.FOC;
+  const computerScienceDepartment = structure.departmentByCode.CS;
+  const computerScienceProgram = structure.programByCode["BSC-CS"];
+  const entries = [
+    ["CSC101", "Monday", "08:30", "10:00", "Computing Lab 1"],
+    ["CSC102", "Tuesday", "10:15", "11:45", "Computing Lab 2"],
+    ["CSC103", "Wednesday", "08:30", "10:00", "Lecture Hall B"],
+    ["CSC104", "Thursday", "10:15", "11:45", "Computing Lab 1"],
+    ["CSC105", "Friday", "08:30", "10:00", "Lecture Hall B"],
+    ["CSC106", "Friday", "10:15", "11:45", "Seminar Room 2"],
+  ];
+
+  await TimetableEntry.insertMany(
+    entries.map(([courseCode, dayOfWeek, startTime, endTime, venue]) => ({
+      course: courses[courseCode]._id,
+      faculty: computingFaculty._id,
+      department: computerScienceDepartment._id,
+      program: computerScienceProgram._id,
+      academicYear: "2026/2027",
+      semester: 1,
+      dayOfWeek,
+      startTime,
+      endTime,
+      venue,
+      lecturerName: "Demo Lecturer",
+      isActive: true,
+    })),
+  );
+};
+
+const seedStudentServicesDemo = async ({ accounts, registrar }) => {
+  await Complaint.insertMany([
+    {
+      student: accounts["john.student@uniportal.demo"]._id,
+      complaintType: "registration_issue",
+      subject: "Registration approval confirmation",
+      description:
+        "Requesting confirmation that the approved semester registration is reflected on the student portal.",
+      status: "resolved",
+      response:
+        "Registration was verified and the approved enrollment is available on the student portal.",
+      handledBy: registrar._id,
+    },
+    {
+      student: accounts["amina.student@uniportal.demo"]._id,
+      complaintType: "profile_issue",
+      subject: "Student profile verification",
+      description:
+        "Requesting review of the academic profile before semester registration closes.",
+      status: "in_review",
+      response: "The Registrar's Office is reviewing the submitted profile information.",
+      handledBy: registrar._id,
+    },
+  ]);
+};
+
+const seedExamClearanceDemo = async ({ accounts, registrar }) => {
+  await ExamClearance.insertMany([
+    {
+      student: accounts["john.student@uniportal.demo"]._id,
+      academicYear: "2026/2027",
+      semester: 1,
+      status: "eligible",
+      attendancePercentage: 91,
+      financialClearanceStatus: "cleared",
+      remarks: "Eligible for the scheduled semester examinations.",
+      reviewedBy: registrar._id,
+      reviewedAt: new Date("2026-06-10T09:00:00.000Z"),
+    },
+    {
+      student: accounts["hellen.student@uniportal.demo"]._id,
+      academicYear: "2026/2027",
+      semester: 1,
+      status: "pending",
+      attendancePercentage: 82,
+      financialClearanceStatus: "pending",
+      remarks: "Pending final financial clearance confirmation.",
+    },
+    {
+      student: accounts["elizabeth.student@uniportal.demo"]._id,
+      academicYear: "2026/2027",
+      semester: 1,
+      status: "not_eligible",
+      attendancePercentage: 68,
+      financialClearanceStatus: "cleared",
+      remarks: "Attendance review required before examination eligibility.",
+      reviewedBy: registrar._id,
+      reviewedAt: new Date("2026-06-10T09:15:00.000Z"),
+    },
+  ]);
+};
+
+const verifyAndSummarizeDemo = async () => {
+  const [
+    totalUsers,
+    totalStudents,
+    totalFaculties,
+    totalDepartments,
+    totalPrograms,
+    totalCourses,
+    totalEnrollments,
+    totalAcademicRecords,
+    totalReleasedResults,
+    totalUnreleasedResults,
+    timetableEntries,
+    complaints,
+    examClearances,
+    progressionRows,
+  ] = await Promise.all([
+    User.countDocuments(),
+    User.countDocuments({ role: "student" }),
+    Faculty.countDocuments(),
+    Department.countDocuments(),
+    Program.countDocuments(),
+    Course.countDocuments(),
+    Enrollment.countDocuments(),
+    AcademicRecord.countDocuments(),
+    AcademicRecord.countDocuments({ workflowStatus: "released" }),
+    AcademicRecord.countDocuments({
+      gradingPolicy: { $exists: true },
+      workflowStatus: { $ne: "released" },
+    }),
+    TimetableEntry.countDocuments(),
+    Complaint.countDocuments(),
+    ExamClearance.countDocuments(),
+    AcademicRecord.aggregate([
+      { $match: { gradingPolicy: { $exists: true } } },
+      { $group: { _id: "$academicStanding", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]),
+  ]);
+
+  const progressionStatusCounts = Object.fromEntries(
+    progressionRows.map(({ _id, count }) => [_id, count]),
+  );
+  const expectedProgressionCounts = {
+    Pass: 2,
+    Supplementary: 1,
+    "Carry Over": 1,
+    Repeat: 1,
+    Discontinued: 1,
+  };
+  for (const [status, expected] of Object.entries(expectedProgressionCounts)) {
+    if (progressionStatusCounts[status] !== expected) {
+      throw new Error(
+        `Expected ${expected} ${status} examination record(s), found ${progressionStatusCounts[status] || 0}.`,
+      );
+    }
+  }
+
+  const rebecca = await User.findOne({ email: "rebecca.cs@uniportal.demo" });
+  const rebeccaResult = await AcademicRecord.findOne({
+    student: rebecca._id,
+    gradingPolicy: { $exists: true },
+  });
+  if (rebeccaResult?.workflowStatus !== "dean_hod_reviewed") {
+    throw new Error("Rebecca Deng's result must remain reviewed and unreleased.");
+  }
+
+  const accidentalRecords = await Promise.all([
+    Department.countDocuments({
+      $or: [{ name: /Stephen Hakim Joseph/i }, { code: "001" }],
+    }),
+    Course.countDocuments({
+      $or: [{ title: /commnity studies amd rural development/i }, { code: "001" }],
+    }),
+    User.countDocuments({ name: /Ngor Agook Kuol/i }),
+  ]);
+  if (accidentalRecords.some(Boolean)) {
+    throw new Error("Accidental test records remain after the demo reset.");
+  }
+
+  return {
+    totalUsers,
+    totalStudents,
+    totalFaculties,
+    totalDepartments,
+    totalPrograms,
+    totalCourses,
+    totalEnrollments,
+    totalAcademicRecords,
+    totalReleasedResults,
+    totalUnreleasedResults,
+    progressionStatusCounts,
+    timetableEntries,
+    complaints,
+    examClearances,
+  };
+};
+
 const getCoursesForProgramLevel = (courses, programCode, level) =>
   courseSeed
     .filter(([, , , , courseLevel, seedProgramCode]) => {
@@ -492,7 +987,9 @@ const getFallbackCourses = (courses, level) =>
     .slice(0, 3);
 
 const seedDemo = async () => {
+  assertDemoDatabaseResetIsAuthorized();
   await mongoose.connect(DB);
+  const removed = await resetDemoDatabase();
 
   const accounts = {};
   for (const account of [...adminAccounts, ...institutionalRoleAccounts]) {
@@ -549,6 +1046,12 @@ const seedDemo = async () => {
     "rejected",
     "pending",
     "approved",
+    "approved",
+    "approved",
+    "approved",
+    "approved",
+    "approved",
+    "approved",
   ];
 
   for (let index = 0; index < studentSeed.length; index += 1) {
@@ -590,9 +1093,26 @@ const seedDemo = async () => {
     }
   }
 
-  await mongoose.disconnect();
+  const policy = await upsertDemoGradingPolicy(
+    accounts["admin@uniportal.demo"],
+  );
+  await seedExaminationDemo({
+    accounts,
+    courses,
+    policy,
+    registrar,
+  });
+  await seedTimetableDemo({ courses, structure });
+  await seedStudentServicesDemo({ accounts, registrar });
+  await seedExamClearanceDemo({ accounts, registrar });
+
+  const summary = await verifyAndSummarizeDemo();
 
   console.log("UniPortal institutional demo seed completed successfully.");
+  console.log("\nRemoved records:");
+  for (const [collection, count] of Object.entries(removed)) {
+    console.log(`${collection}: ${count}`);
+  }
   console.log("\nPrimary demo accounts:");
   for (const account of adminAccounts) {
     console.log(`${account.role}: ${account.email} / ${account.password}`);
@@ -604,13 +1124,26 @@ const seedDemo = async () => {
   console.log(`student: john.student@uniportal.demo / ${studentPassword}`);
   console.log(`student: amina.student@uniportal.demo / ${studentPassword}`);
   console.log("\nSeeded data summary:");
-  console.log(`${faculties.length} faculties`);
-  console.log(`${departments.length} departments`);
-  console.log(`${programs.length} programs`);
-  console.log(`${courseSeed.length} courses`);
-  console.log(`${studentSeed.length} student profiles`);
+  console.log(`total users: ${summary.totalUsers}`);
+  console.log(`total students: ${summary.totalStudents}`);
+  console.log(`total faculties: ${summary.totalFaculties}`);
+  console.log(`total departments: ${summary.totalDepartments}`);
+  console.log(`total programs: ${summary.totalPrograms}`);
+  console.log(`total courses: ${summary.totalCourses}`);
+  console.log(`total enrollments: ${summary.totalEnrollments}`);
+  console.log(`total academic records: ${summary.totalAcademicRecords}`);
+  console.log(`total released results: ${summary.totalReleasedResults}`);
+  console.log(`total unreleased results: ${summary.totalUnreleasedResults}`);
+  console.log(
+    `progression status counts: ${JSON.stringify(summary.progressionStatusCounts)}`,
+  );
+  console.log(`timetable entries: ${summary.timetableEntries}`);
+  console.log(`student service requests: ${summary.complaints}`);
+  console.log(`exam clearance records: ${summary.examClearances}`);
   console.log("Current session: 2026/2027 Semester 1 open");
   console.log("Historical session: 2025/2026 Semester 2 closed");
+
+  await mongoose.disconnect();
 };
 
 seedDemo().catch(async (error) => {
