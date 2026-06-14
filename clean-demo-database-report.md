@@ -130,8 +130,8 @@ cluster/database confirmation token for remote targets.
   Computer Science cohort.
 - The result sheet displays the configured default institution name until
   `VITE_INSTITUTION_NAME` is set for the receiving university.
-- Demo passwords are generated during each reset unless the corresponding
-  `DEMO_*_PASSWORD` environment variables are configured.
+- Demo accounts use the stable shared password documented in
+  `demo-login-fix-report.md`; environment variables can override it when needed.
 - The Extended JSON backup is complete and type-preserving, but MongoDB
   Database Tools are not installed in this workspace.
 

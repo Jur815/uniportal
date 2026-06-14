@@ -1,5 +1,4 @@
 const dotenv = require("dotenv");
-const crypto = require("crypto");
 const mongoose = require("mongoose");
 const path = require("path");
 
@@ -72,19 +71,10 @@ const assertDemoDatabaseResetIsAuthorized = () => {
   }
 };
 
-const generatedPasswords = new Map();
+const DEFAULT_DEMO_PASSWORD = "UniPortal123";
 
 const getDemoPassword = (envName) => {
-  if (process.env[envName]) return process.env[envName];
-
-  if (!generatedPasswords.has(envName)) {
-    generatedPasswords.set(
-      envName,
-      `Demo-${crypto.randomBytes(9).toString("base64url")}1!`,
-    );
-  }
-
-  return generatedPasswords.get(envName);
+  return process.env[envName] || process.env.DEMO_SHARED_PASSWORD || DEFAULT_DEMO_PASSWORD;
 };
 
 const adminAccounts = [
