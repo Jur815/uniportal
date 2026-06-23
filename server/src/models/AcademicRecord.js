@@ -37,6 +37,11 @@ const academicRecordCourseSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
+    resultCode: {
+      type: String,
+      trim: true,
+      maxlength: 20,
+    },
     status: {
       type: String,
       enum: ["in-progress", "passed", "failed", "incomplete"],
@@ -148,6 +153,15 @@ const academicRecordSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
+    },
+    isDeansList: {
+      type: Boolean,
+      default: false,
+    },
+    institutionalRemark: {
+      type: String,
+      trim: true,
+      maxlength: 120,
     },
     academicStanding: {
       type: String,

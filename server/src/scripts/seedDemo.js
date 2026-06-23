@@ -239,13 +239,14 @@ const examinationDemoCohort = [
   {
     email: "bol.cs@uniportal.demo",
     standing: "Pass",
-    marks: [78, 72, 68, 65, 61, 58],
+    marks: [88, 82, 79, 77, 76, 74],
     workflowStatus: "released",
   },
   {
     email: "nyabuay.cs@uniportal.demo",
     standing: "Supplementary",
     marks: [75, 68, 62, 58, 55, 45],
+    resultCodes: [null, null, null, null, null, "AbsF"],
     workflowStatus: "released",
   },
   {
@@ -270,6 +271,7 @@ const examinationDemoCohort = [
     email: "rebecca.cs@uniportal.demo",
     standing: "Pass",
     marks: [81, 76, 69, 64, 60, 56],
+    resultCodes: [null, null, null, null, null, "Incom"],
     workflowStatus: "dean_hod_reviewed",
   },
 ];
@@ -595,10 +597,21 @@ const upsertDemoGradingPolicy = async (admin) => {
       isActive: true,
       gradeBands: [
         { minMark: 80, maxMark: 100, grade: "A", gradePoint: 4, isPass: true },
-        { minMark: 70, maxMark: 79.99, grade: "B", gradePoint: 3, isPass: true },
-        { minMark: 60, maxMark: 69.99, grade: "C", gradePoint: 2, isPass: true },
+        { minMark: 75, maxMark: 79.99, grade: "B+", gradePoint: 3.5, isPass: true },
+        { minMark: 70, maxMark: 74.99, grade: "B", gradePoint: 3, isPass: true },
+        { minMark: 65, maxMark: 69.99, grade: "C+", gradePoint: 2.5, isPass: true },
+        { minMark: 60, maxMark: 64.99, grade: "C", gradePoint: 2, isPass: true },
         { minMark: 50, maxMark: 59.99, grade: "D", gradePoint: 1, isPass: true },
         { minMark: 0, maxMark: 49.99, grade: "F", gradePoint: 0, isPass: false },
+      ],
+      specialResultCodes: [
+        { code: "AbsF", label: "Absent", progressionEffect: "failed", gradePoint: 0, isActive: true },
+        { code: "BarF", label: "Barred", progressionEffect: "failed", gradePoint: 0, isActive: true },
+        { code: "Incom", label: "Incomplete", progressionEffect: "incomplete", isActive: true },
+        { code: "CR", label: "Conditional Repeat", progressionEffect: "carry_over", gradePoint: 0, isActive: true },
+        { code: "Sus", label: "Suspension", progressionEffect: "suspended", isActive: true },
+        { code: "Substitute", label: "Substitute Result", progressionEffect: "none", isActive: true },
+        { code: "Cheating Case", label: "Cheating Case", progressionEffect: "failed", gradePoint: 0, isActive: true },
       ],
       promotionRules: {
         failedCourseThreshold: 1,
@@ -609,6 +622,9 @@ const upsertDemoGradingPolicy = async (admin) => {
         repeatGpaThreshold: 1.5,
         discontinueGpaThreshold: 1,
         minimumEarnedCredits: 12,
+        deansListEnabled: true,
+        deansListGpaThreshold: 3.5,
+        deansListMinimumEarnedCredits: 18,
       },
       createdBy: admin._id,
       updatedBy: admin._id,
@@ -636,6 +652,7 @@ const buildResultAudit = ({
       marks: course.marks,
       grade: course.grade,
       gradePoint: course.gradePoint,
+      resultCode: course.resultCode,
       status: course.status,
     },
     note: "Seeded Computer Science marks for institutional demonstration.",
@@ -712,7 +729,8 @@ const seedExaminationDemo = async ({
       code: course.code,
       title: course.title,
       creditHours: course.creditHours,
-      marks: item.marks[index],
+      marks: item.resultCodes?.[index] ? undefined : item.marks[index],
+      resultCode: item.resultCodes?.[index] || undefined,
       attemptNumber: 1,
     }));
     const calculated = calculateSemesterResult(baseCourses, policy);
@@ -737,6 +755,8 @@ const seedExaminationDemo = async ({
       earnedCredits: calculated.earnedCredits,
       failedCourseCount: calculated.failedCourseCount,
       academicStanding: item.standing,
+      isDeansList: calculated.isDeansList,
+      institutionalRemark: calculated.institutionalRemark,
       workflowStatus: item.workflowStatus,
       gradingPolicy: policy._id,
       gradingPolicySnapshot: getPolicySnapshot(policy),
@@ -751,7 +771,7 @@ const seedExaminationDemo = async ({
       approvalNote: isReleased
         ? "Released Computer Science result for institutional demo."
         : "Reviewed result intentionally not released for visibility testing.",
-      remarks: `${item.standing} demonstration record.`,
+      remarks: `${calculated.institutionalRemark} demonstration record.`,
       auditLog: buildResultAudit({
         courses: calculated.courses,
         lecturer,
@@ -927,6 +947,41 @@ const verifyAndSummarizeDemo = async () => {
   });
   if (rebeccaResult?.workflowStatus !== "dean_hod_reviewed") {
     throw new Error("Rebecca Deng's result must remain reviewed and unreleased.");
+  }
+  if (!rebeccaResult.courses.some((course) => course.resultCode === "Incom")) {
+    throw new Error("Rebecca Deng's demo result must include an incomplete code.");
+  }
+
+  const bol = await User.findOne({ email: "bol.cs@uniportal.demo" });
+  const bolResult = await AcademicRecord.findOne({
+    student: bol._id,
+    gradingPolicy: { $exists: true },
+  });
+  if (!bolResult?.isDeansList || bolResult.institutionalRemark !== "DL") {
+    throw new Error("Bol Mading's demo result must demonstrate Dean's List recognition.");
+  }
+  const demoGrades = new Set(
+    bolResult.courses.map((course) => course.grade).filter(Boolean),
+  );
+  if (!demoGrades.has("B+")) {
+    throw new Error("The examination demo must include a B+ grade example.");
+  }
+
+  const nyabuay = await User.findOne({ email: "nyabuay.cs@uniportal.demo" });
+  const nyabuayResult = await AcademicRecord.findOne({
+    student: nyabuay._id,
+    gradingPolicy: { $exists: true },
+  });
+  if (!nyabuayResult?.courses.some((course) => course.resultCode === "AbsF")) {
+    throw new Error("The examination demo must include an AbsF result code.");
+  }
+
+  const cPlusResult = await AcademicRecord.exists({
+    gradingPolicy: { $exists: true },
+    "courses.grade": "C+",
+  });
+  if (!cPlusResult) {
+    throw new Error("The examination demo must include a C+ grade example.");
   }
 
   const accidentalRecords = await Promise.all([

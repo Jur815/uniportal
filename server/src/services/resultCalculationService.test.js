@@ -141,3 +141,120 @@ test("permits release only after complete calculation and approval checks", () =
 
   assert.equal(validateResultForRelease(record, [record]).isValid, true);
 });
+
+test("supports configurable B+ and C+ grade bands without changing GPA logic", () => {
+  const result = calculateSemesterResult(
+    [
+      { course: "a", creditHours: 3, marks: 77 },
+      { course: "b", creditHours: 3, marks: 67 },
+    ],
+    {
+      ...policy,
+      gradeBands: [
+        { minMark: 80, maxMark: 100, grade: "A", gradePoint: 4, isPass: true },
+        { minMark: 75, maxMark: 79.99, grade: "B+", gradePoint: 3.5, isPass: true },
+        { minMark: 70, maxMark: 74.99, grade: "B", gradePoint: 3, isPass: true },
+        { minMark: 65, maxMark: 69.99, grade: "C+", gradePoint: 2.5, isPass: true },
+        { minMark: 60, maxMark: 64.99, grade: "C", gradePoint: 2, isPass: true },
+        { minMark: 50, maxMark: 59.99, grade: "D", gradePoint: 1, isPass: true },
+        { minMark: 0, maxMark: 49.99, grade: "F", gradePoint: 0, isPass: false },
+      ],
+    },
+  );
+
+  assert.equal(result.courses[0].grade, "B+");
+  assert.equal(result.courses[1].grade, "C+");
+  assert.equal(result.GPA, 3);
+});
+
+test("applies configured special result codes and institutional remarks", () => {
+  const result = calculateSemesterResult(
+    [
+      { course: "a", creditHours: 3, marks: 72 },
+      { course: "b", creditHours: 3, resultCode: "AbsF" },
+      { course: "c", creditHours: 3, marks: 42 },
+    ],
+    {
+      ...policy,
+      specialResultCodes: [
+        {
+          code: "AbsF",
+          label: "Absent",
+          progressionEffect: "failed",
+          gradePoint: 0,
+          isActive: true,
+        },
+      ],
+    },
+  );
+
+  assert.equal(result.courses[1].grade, "AbsF");
+  assert.equal(result.courses[1].status, "failed");
+  assert.equal(result.academicStanding, "Carry Over");
+  assert.equal(result.institutionalRemark, "Supp 2F + C.O");
+});
+
+test("blocks incomplete special results from release", () => {
+  const result = calculateSemesterResult(
+    [{ course: "a", creditHours: 3, resultCode: "Incom" }],
+    {
+      ...policy,
+      specialResultCodes: [
+        {
+          code: "Incom",
+          label: "Incomplete",
+          progressionEffect: "incomplete",
+          isActive: true,
+        },
+      ],
+    },
+  );
+  const record = {
+    ...result,
+    CGPA: result.GPA,
+    gradingPolicySnapshot: {
+      ...policy,
+      specialResultCodes: [
+        {
+          code: "Incom",
+          label: "Incomplete",
+          progressionEffect: "incomplete",
+          isActive: true,
+        },
+      ],
+    },
+    workflowStatus: "registrar_finalized",
+    submittedBy: "lecturer",
+    reviewedBy: "dean",
+    finalizedBy: "registrar",
+  };
+
+  assert.equal(validateResultForRelease(record, [record]).isValid, false);
+  assert.equal(result.institutionalRemark, "Incom");
+  assert.equal(
+    validateResultForRelease(record, [record]).verification.checks.completeMarks,
+    false,
+  );
+});
+
+test("recognizes Dean's List using configurable policy thresholds", () => {
+  const result = calculateSemesterResult(
+    [
+      { course: "a", creditHours: 3, marks: 85 },
+      { course: "b", creditHours: 3, marks: 80 },
+    ],
+    {
+      ...policy,
+      promotionRules: {
+        ...policy.promotionRules,
+        deansListEnabled: true,
+        deansListGpaThreshold: 3.5,
+        deansListMinimumEarnedCredits: 6,
+      },
+    },
+  );
+
+  assert.equal(result.isDeansList, true);
+  assert.equal(result.institutionalRemark, "DL");
+  assert.equal(result.academicStanding, "Pass");
+});

@@ -68,6 +68,7 @@ export default function MyReleasedResultsPage() {
                     <th>Course Title</th>
                     <th>CH</th>
                     <th>Marks</th>
+                    <th>Result Code</th>
                     <th>Grade</th>
                     <th>GP</th>
                     <th>Result</th>
@@ -79,7 +80,8 @@ export default function MyReleasedResultsPage() {
                       <td>{course.code}</td>
                       <td>{course.title}</td>
                       <td>{course.creditHours}</td>
-                      <td>{course.marks}</td>
+                      <td>{course.marks ?? "—"}</td>
+                      <td>{course.resultCode || "—"}</td>
                       <td>{course.grade}</td>
                       <td>{course.gradePoint}</td>
                       <td>{formatLabel(course.status)}</td>
@@ -93,6 +95,14 @@ export default function MyReleasedResultsPage() {
               <p><strong>GPA:</strong> {record.GPA}</p>
               <p><strong>CGPA:</strong> {record.CGPA}</p>
               <p><strong>Academic Standing:</strong> {record.academicStanding}</p>
+              <p>
+                <strong>Institutional Remark:</strong>{" "}
+                {record.institutionalRemark || record.academicStanding}
+              </p>
+              <p>
+                <strong>Dean&apos;s List:</strong>{" "}
+                {record.isDeansList ? "DL — Recognized" : "Not applicable"}
+              </p>
               <p><strong>Approval Status:</strong> Released</p>
             </div>
             <div className="result-signature-row">

@@ -20,10 +20,21 @@ const defaultPolicy = {
   name: "Demo Policy - configurable per institution",
   gradeBands: [
     { minMark: 80, maxMark: 100, grade: "A", gradePoint: 4, isPass: true },
-    { minMark: 70, maxMark: 79.99, grade: "B", gradePoint: 3, isPass: true },
-    { minMark: 60, maxMark: 69.99, grade: "C", gradePoint: 2, isPass: true },
+    { minMark: 75, maxMark: 79.99, grade: "B+", gradePoint: 3.5, isPass: true },
+    { minMark: 70, maxMark: 74.99, grade: "B", gradePoint: 3, isPass: true },
+    { minMark: 65, maxMark: 69.99, grade: "C+", gradePoint: 2.5, isPass: true },
+    { minMark: 60, maxMark: 64.99, grade: "C", gradePoint: 2, isPass: true },
     { minMark: 50, maxMark: 59.99, grade: "D", gradePoint: 1, isPass: true },
     { minMark: 0, maxMark: 49.99, grade: "F", gradePoint: 0, isPass: false },
+  ],
+  specialResultCodes: [
+    { code: "AbsF", label: "Absent", progressionEffect: "failed", gradePoint: 0, isActive: true },
+    { code: "BarF", label: "Barred", progressionEffect: "failed", gradePoint: 0, isActive: true },
+    { code: "Incom", label: "Incomplete", progressionEffect: "incomplete", isActive: true },
+    { code: "CR", label: "Conditional Repeat", progressionEffect: "carry_over", gradePoint: 0, isActive: true },
+    { code: "Sus", label: "Suspension", progressionEffect: "suspended", isActive: true },
+    { code: "Substitute", label: "Substitute Result", progressionEffect: "none", isActive: true },
+    { code: "Cheating Case", label: "Cheating Case", progressionEffect: "failed", gradePoint: 0, isActive: true },
   ],
   promotionRules: {
     failedCourseThreshold: 1,
@@ -34,6 +45,9 @@ const defaultPolicy = {
     repeatGpaThreshold: 1.5,
     discontinueGpaThreshold: 1,
     minimumEarnedCredits: 12,
+    deansListEnabled: true,
+    deansListGpaThreshold: 3.5,
+    deansListMinimumEarnedCredits: 18,
   },
 };
 
@@ -92,6 +106,7 @@ export default function ExaminationManagementPage() {
         marks: course.marks ?? "",
         grade: course.grade || "",
         gradePoint: course.gradePoint ?? "",
+        resultCode: course.resultCode || "",
         status: course.status,
       })),
     );
@@ -150,7 +165,11 @@ export default function ExaminationManagementPage() {
     try {
       setSaving(true);
       const data = await updateResultMarks(selected._id, {
-        courses: markRows.map(({ course, marks }) => ({ course, marks })),
+        courses: markRows.map(({ course, marks, resultCode }) => ({
+          course,
+          marks,
+          resultCode,
+        })),
         remarks,
         note,
       });
@@ -271,6 +290,10 @@ export default function ExaminationManagementPage() {
                   value={selected.carryOverCourses?.length ?? 0}
                 />
                 <Metric label="Standing" value={selected.academicStanding || "Pending"} />
+                <Metric
+                  label="Institutional Remark"
+                  value={selected.institutionalRemark || selected.academicStanding || "Pending"}
+                />
               </div>
 
               <VerificationSummary verification={selected.resultVerification} />
@@ -282,6 +305,7 @@ export default function ExaminationManagementPage() {
                       <th>Course</th>
                       <th>Credits</th>
                       <th>Marks</th>
+                      <th>Result Code</th>
                       <th>Grade</th>
                       <th>Point</th>
                       <th>Outcome</th>
@@ -297,7 +321,7 @@ export default function ExaminationManagementPage() {
                         <td>
                           <input
                             aria-label={`Marks for ${row.code}`}
-                            disabled={!canEdit}
+                            disabled={!canEdit || Boolean(row.resultCode)}
                             max="100"
                             min="0"
                             onChange={(event) =>
@@ -312,6 +336,35 @@ export default function ExaminationManagementPage() {
                             type="number"
                             value={row.marks}
                           />
+                        </td>
+                        <td>
+                          <select
+                            aria-label={`Result code for ${row.code}`}
+                            disabled={!canEdit}
+                            onChange={(event) =>
+                              setMarkRows((current) =>
+                                current.map((item, itemIndex) =>
+                                  itemIndex === index
+                                    ? {
+                                        ...item,
+                                        resultCode: event.target.value,
+                                        marks: event.target.value ? "" : item.marks,
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                            value={row.resultCode}
+                          >
+                            <option value="">None</option>
+                            {(policy.specialResultCodes || [])
+                              .filter((item) => item.isActive !== false)
+                              .map((item) => (
+                                <option key={item.code} value={item.code}>
+                                  {item.code} — {item.label}
+                                </option>
+                              ))}
+                          </select>
                         </td>
                         <td>{row.grade || "Pending"}</td>
                         <td>{row.gradePoint === "" ? "Pending" : row.gradePoint}</td>
@@ -575,7 +628,7 @@ function PolicyEditor({ policy, setPolicy, saving, onSave, readOnly }) {
       ...current,
       promotionRules: {
         ...current.promotionRules,
-        [key]: Number(value),
+        [key]: key === "deansListEnabled" ? value : Number(value),
       },
     }));
   return (
@@ -637,17 +690,124 @@ function PolicyEditor({ policy, setPolicy, saving, onSave, readOnly }) {
           </tbody>
         </table>
       </div>
+      <h3>Optional Special Result Codes</h3>
+      <div className="responsive-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Meaning</th>
+              <th>Progression Effect</th>
+              <th>Grade Point</th>
+              <th>Active</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(policy.specialResultCodes || []).map((item, index) => (
+              <tr key={`${item.code}-${index}`}>
+                <td>
+                  <input
+                    disabled={readOnly}
+                    onChange={(event) =>
+                      updateSpecialCode(setPolicy, index, "code", event.target.value)
+                    }
+                    type="text"
+                    value={item.code}
+                  />
+                </td>
+                <td>
+                  <input
+                    disabled={readOnly}
+                    onChange={(event) =>
+                      updateSpecialCode(setPolicy, index, "label", event.target.value)
+                    }
+                    type="text"
+                    value={item.label}
+                  />
+                </td>
+                <td>
+                  <select
+                    disabled={readOnly}
+                    onChange={(event) =>
+                      updateSpecialCode(
+                        setPolicy,
+                        index,
+                        "progressionEffect",
+                        event.target.value,
+                      )
+                    }
+                    value={item.progressionEffect}
+                  >
+                    <option value="none">No progression effect</option>
+                    <option value="failed">Failed course</option>
+                    <option value="carry_over">Carry over</option>
+                    <option value="suspended">Suspension</option>
+                    <option value="incomplete">Incomplete / blocks release</option>
+                  </select>
+                </td>
+                <td>
+                  <input
+                    disabled={readOnly}
+                    onChange={(event) =>
+                      updateSpecialCode(
+                        setPolicy,
+                        index,
+                        "gradePoint",
+                        event.target.value === "" ? "" : Number(event.target.value),
+                      )
+                    }
+                    placeholder="N/A"
+                    step="0.5"
+                    type="number"
+                    value={item.gradePoint ?? ""}
+                  />
+                </td>
+                <td>
+                  <select
+                    disabled={readOnly}
+                    onChange={(event) =>
+                      updateSpecialCode(
+                        setPolicy,
+                        index,
+                        "isActive",
+                        event.target.value === "true",
+                      )
+                    }
+                    value={String(item.isActive !== false)}
+                  >
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <div className="policy-rule-grid">
         {Object.entries(policy.promotionRules || {}).map(([key, value]) => (
           <label key={key}>
             {formatLabel(key)}
-            <input
-              disabled={readOnly}
-              onChange={(event) => updateRule(key, event.target.value)}
-              step="0.01"
-              type="number"
-              value={value}
-            />
+            {key === "deansListEnabled" ? (
+              <select
+                disabled={readOnly}
+                onChange={(event) =>
+                  updateRule(key, event.target.value === "true")
+                }
+                value={String(value)}
+              >
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </select>
+            ) : (
+              <input
+                disabled={readOnly}
+                onChange={(event) => updateRule(key, event.target.value)}
+                step="0.01"
+                type="number"
+                value={value}
+              />
+            )}
           </label>
         ))}
       </div>
@@ -658,6 +818,15 @@ function PolicyEditor({ policy, setPolicy, saving, onSave, readOnly }) {
       )}
     </Card>
   );
+}
+
+function updateSpecialCode(setPolicy, index, field, value) {
+  setPolicy((current) => ({
+    ...current,
+    specialResultCodes: current.specialResultCodes.map((item, itemIndex) =>
+      itemIndex === index ? { ...item, [field]: value } : item,
+    ),
+  }));
 }
 
 function formatLabel(value = "") {

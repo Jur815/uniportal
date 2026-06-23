@@ -11,6 +11,21 @@ const gradeBandSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const specialResultCodeSchema = new mongoose.Schema(
+  {
+    code: { type: String, required: true, trim: true, maxlength: 20 },
+    label: { type: String, required: true, trim: true, maxlength: 80 },
+    progressionEffect: {
+      type: String,
+      enum: ["none", "failed", "carry_over", "suspended", "incomplete"],
+      default: "none",
+    },
+    gradePoint: { type: Number, min: 0, max: 5 },
+    isActive: { type: Boolean, default: true },
+  },
+  { _id: false },
+);
+
 const gradingPolicySchema = new mongoose.Schema(
   {
     name: {
@@ -31,6 +46,10 @@ const gradingPolicySchema = new mongoose.Schema(
         message: "At least one grade band is required",
       },
     },
+    specialResultCodes: {
+      type: [specialResultCodeSchema],
+      default: [],
+    },
     promotionRules: {
       failedCourseThreshold: { type: Number, default: 1, min: 0 },
       carryOverThreshold: { type: Number, default: 2, min: 0 },
@@ -40,6 +59,9 @@ const gradingPolicySchema = new mongoose.Schema(
       repeatGpaThreshold: { type: Number, default: 1.5, min: 0, max: 5 },
       discontinueGpaThreshold: { type: Number, default: 1, min: 0, max: 5 },
       minimumEarnedCredits: { type: Number, default: 12, min: 0 },
+      deansListEnabled: { type: Boolean, default: false },
+      deansListGpaThreshold: { type: Number, default: 3.5, min: 0, max: 5 },
+      deansListMinimumEarnedCredits: { type: Number, default: 12, min: 0 },
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

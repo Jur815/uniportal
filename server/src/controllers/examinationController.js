@@ -6,7 +6,9 @@ const {
   DEFAULT_POLICY,
   calculateCgpa,
   calculateSemesterResult,
+  formatInstitutionalRemark,
   getPolicySnapshot,
+  isCourseResultEntered,
   validateResultForRelease,
   verifyResultMetrics,
 } = require("../services/resultCalculationService");
@@ -74,9 +76,19 @@ const enrichRecords = async (records) => {
   return records.map((record) => {
     const plain = record.toObject();
     const studentId = record.student?._id || record.student;
+    const verificationRecords = [
+      ...(recordsByStudent.get(String(studentId)) || []),
+    ];
+    if (
+      !verificationRecords.some(
+        (item) => String(item._id) === String(record._id),
+      )
+    ) {
+      verificationRecords.push(record);
+    }
     const verification = verifyResultMetrics(
       plain,
-      recordsByStudent.get(String(studentId)) || [],
+      verificationRecords,
     );
     return {
       ...plain,
@@ -115,7 +127,7 @@ exports.getPolicy = async (req, res) => {
 };
 
 exports.upsertPolicy = async (req, res) => {
-  const { name, gradeBands, promotionRules } = req.body;
+  const { name, gradeBands, promotionRules, specialResultCodes = [] } = req.body;
   if (!name || !Array.isArray(gradeBands) || gradeBands.length === 0) {
     return badRequest(res, "name and gradeBands[] are required");
   }
@@ -140,9 +152,46 @@ exports.upsertPolicy = async (req, res) => {
   );
   if (invalidBand) return badRequest(res, "One or more grade bands are invalid");
 
+  const normalizedCodes = specialResultCodes.map((item) => ({
+    code: String(item.code || "").trim(),
+    label: String(item.label || "").trim(),
+    progressionEffect: String(item.progressionEffect || "none"),
+    gradePoint:
+      item.gradePoint === "" ||
+      item.gradePoint === null ||
+      item.gradePoint === undefined
+        ? undefined
+        : Number(item.gradePoint),
+    isActive: item.isActive !== false,
+  }));
+  const validEffects = new Set([
+    "none",
+    "failed",
+    "carry_over",
+    "suspended",
+    "incomplete",
+  ]);
+  const duplicateCodes =
+    new Set(normalizedCodes.map((item) => item.code)).size !==
+    normalizedCodes.length;
+  const invalidCode = normalizedCodes.some(
+    (item) =>
+      !item.code ||
+      !item.label ||
+      !validEffects.has(item.progressionEffect) ||
+      (item.gradePoint !== undefined &&
+        (Number.isNaN(item.gradePoint) ||
+          item.gradePoint < 0 ||
+          item.gradePoint > 5)),
+  );
+  if (invalidCode || duplicateCodes) {
+    return badRequest(res, "One or more special result codes are invalid");
+  }
+
   const policy = await GradingPolicy.create({
     name: String(name).trim(),
     gradeBands: normalizedBands,
+    specialResultCodes: normalizedCodes,
     promotionRules,
     isActive: false,
     createdBy: req.user._id,
@@ -223,7 +272,11 @@ exports.enterMarks = async (req, res) => {
   const updates = new Map();
   for (const item of req.body.courses) {
     const courseId = String(item.course || "");
-    const marks = item.marks === "" ? undefined : Number(item.marks);
+    const resultCode = String(item.resultCode || "").trim();
+    const marks =
+      resultCode || item.marks === "" || item.marks === undefined
+        ? undefined
+        : Number(item.marks);
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return badRequest(res, "Each mark entry requires a valid course ID");
     }
@@ -233,14 +286,14 @@ exports.enterMarks = async (req, res) => {
     ) {
       return badRequest(res, "Marks must be between 0 and 100");
     }
-    updates.set(courseId, marks);
+    updates.set(courseId, { marks, resultCode: resultCode || undefined });
   }
 
   const previousCourses = record.courses.map((course) => course.toObject());
   const nextCourses = record.courses.map((course) => {
     const plain = course.toObject();
     if (!updates.has(String(course.course))) return plain;
-    return { ...plain, marks: updates.get(String(course.course)) };
+    return { ...plain, ...updates.get(String(course.course)) };
   });
   let calculation;
   try {
@@ -254,6 +307,8 @@ exports.enterMarks = async (req, res) => {
   record.earnedCredits = calculation.earnedCredits;
   record.failedCourseCount = calculation.failedCourseCount;
   record.academicStanding = calculation.academicStanding;
+  record.isDeansList = calculation.isDeansList;
+  record.institutionalRemark = calculation.institutionalRemark;
   record.gradingPolicy = policy._id;
   record.gradingPolicySnapshot = calculation.gradingPolicySnapshot;
   record.totalCredits = record.courses.reduce(
@@ -278,15 +333,22 @@ exports.enterMarks = async (req, res) => {
     const previous = previousCourses.find(
       (item) => String(item.course) === String(course.course),
     );
-    if (previous?.marks !== course.marks) {
+    if (
+      previous?.marks !== course.marks ||
+      previous?.resultCode !== course.resultCode
+    ) {
       record.auditLog.push(
         audit(req, "marks_updated", {
           course: course.course,
-          previousValue: { marks: previous?.marks },
+          previousValue: {
+            marks: previous?.marks,
+            resultCode: previous?.resultCode,
+          },
           newValue: {
             marks: course.marks,
             grade: course.grade,
             gradePoint: course.gradePoint,
+            resultCode: course.resultCode,
             status: course.status,
           },
           note: req.body.note,
@@ -350,19 +412,22 @@ exports.transitionWorkflow = async (req, res) => {
       `Cannot ${action} results from ${record.workflowStatus} status`,
     );
   }
-  if (action === "submit" && record.courses.some((course) => course.marks === undefined)) {
+  const resultPolicy = record.gradingPolicySnapshot || (await getActivePolicy());
+  if (
+    action === "submit" &&
+    record.courses.some(
+      (course) => !isCourseResultEntered(course, resultPolicy),
+    )
+  ) {
     return badRequest(res, "All course marks are required before submission");
   }
   if (
     ["review", "finalize", "release"].includes(action) &&
     record.courses.some(
-      (course) =>
-        typeof course.marks !== "number" ||
-        typeof course.gradePoint !== "number" ||
-        !course.grade,
+      (course) => !isCourseResultEntered(course, resultPolicy),
     )
   ) {
-    return badRequest(res, "Complete calculated course results are required");
+    return badRequest(res, "Complete marks or configured result codes are required");
   }
   if (action === "finalize" && (!record.submittedBy || !record.reviewedBy)) {
     return badRequest(
@@ -393,6 +458,13 @@ exports.transitionWorkflow = async (req, res) => {
       return badRequest(res, "Invalid academic standing override");
     }
     record.academicStanding = req.body.academicStanding;
+    record.isDeansList =
+      record.academicStanding === "Pass" && Boolean(record.isDeansList);
+    record.institutionalRemark = formatInstitutionalRemark({
+      academicStanding: record.academicStanding,
+      failedCount: record.failedCourseCount,
+      isDeansList: record.isDeansList,
+    });
   }
   record.workflowStatus = transition.to;
   record.approvalNote =
